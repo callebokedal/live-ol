@@ -50,7 +50,7 @@ generateCompetitionsList = (data) => {
 
   data.forEach(data => {
     //console.log(comp)
-    html += "<li class='list-group-item'><span class='date'>" + data.date + "</span> <span class='name'>" + data.name + "</span> (<span class=''>" + data.organizer + "</span>)</li>"
+    html += "<li class='list-group-item'><span class='date'>" + data.date + "</span> <a href=#" + data.id + " class='name'>" + data.name + "</a> (<span class=''>" + data.organizer + "</span>)</li>"
   });
 
   document.getElementById("competitions").innerHTML = html;
