@@ -4,6 +4,7 @@ moment.locale('sv');
 //let now = moment();
 //let today = now.format('YYYY-MM-DD');
 
+
 // Default settings (with my secret, whoops!)
 const defaultSettings = {
   "deviceId": Math.random().toString(36).substr(2, 9),
@@ -15,7 +16,7 @@ const defaultSettings = {
 let competitions;
 let classes;
 
-getCompetitionsw = () => {
+getCompetitions = () => {
   console.log("getCompetitions");
   var xhr = new XMLHttpRequest();
   xhr.open("GET", "https://liveresultat.orientering.se/api.php?method=getcompetitions");
@@ -90,7 +91,15 @@ saveSettings = (defaultSettings) => {
 
 
 /* EVENT LISTENERS */
+$( document ).ready(function() {
+    console.log( "ready!" );
+  // Classes dropdown
+  $('.dropdown-toggle').dropdown()
+
+  getCompetitions()
+});
 document.addEventListener("DOMContentLoaded", function() {
+
 
 
   // save
@@ -103,7 +112,7 @@ document.addEventListener("DOMContentLoaded", function() {
 //    }
 //  });
 
-  getCompetitionsw()
+  //getCompetitions()
 
   // go!
   //if (settings = loadSettings(defaultSettings)) getAccessToken(getDepartures(null));

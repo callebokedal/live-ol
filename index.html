@@ -2,32 +2,50 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
+			<!--<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">-->
+		<!--<meta name="viewport" content="width=device-width, initial-scale=1">-->
 		<title>Live - OL</title>
-		<link href="lib/css/bootstrap.min.css" rel="stylesheet">
+		<!--<link href="lib/css/bootstrap.min.css" rel="stylesheet">-->
+		<link href="lib/css/bootstrap_4.4.1_css_bootstrap.min.css" rel="stylesheet">
+
+
 	</head>
 	<body>
-		<div class="container-fluid">
 
-			<ul class="nav nav-tabs">
-				<li class="nav-item">
-					<a class="nav-link active" href="#">Tävlingar</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link disabled" href="#" aria-disabled="true">Klasser</a>
-				</li>
+		<div class="container-fluid">
+			<ul class="nav nav-pills justify-content-end">
 				<li class="nav-item">
 					<a class="nav-link" href="#">Inställningar</a>
 				</li>
+				<li class="nav-item">
+					<a class="nav-link active" href="#">Tävlingar</a>
+				</li>
+				<li class="nav-item dropdown">
+					<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Klasser</a>
+					<div class="dropdown-menu">
+						<a class="dropdown-item" href="#">Gul</a>
+						<a class="dropdown-item" href="#">Svart</a>
+						<a class="dropdown-item" href="#">Grön</a>
+						<div class="dropdown-divider"></div>
+						<a class="dropdown-item" href="#">Separated link</a>
+					</div>
+				</li>
 			</ul>
+			</div>
+
+			<div class="container-fluid">
 
 			<!-- Competitions -->
 			<ul class="list-group" id="competitions">
+				<div class="spinner-border text-success" role="status">
+					<span class="sr-only">Laddar...</span>
+				</div>
+				<div>Laddar...</div>
 			</ul>
 			<!-- Competitions end -->
 
 			<!-- Classes -->
-			<table class="table table-sm table-striped table-dark">
+			<!--<table class="table table-sm table-striped table-dark">
 				<thead>
 					<tr>
 						<th scope="col">#</th>
@@ -56,7 +74,7 @@
 						<td>@fat</td>
 					</tr>
 				</tbody>
-			</table>
+			</table>-->
 			<!--<a href="#" class="btn btn-primary btn-lg active" role="button" aria-pressed="true">Gul</a>
 			<a href="#" class="btn btn-secondary btn-lg active" role="button" aria-pressed="true">Orange</a>
 			<a href="#" class="btn btn-secondary btn-lg active" role="button" aria-pressed="true">Svart kort</a>-->
@@ -94,7 +112,7 @@
 
 		</div>
 		<script src="lib/js/moment.js"></script>
-		<script src="lib/js/jquery.min.js"></script>
+		<script src="lib/js/jquery-3.5.0.min.js"></script>
 		<script src="lib/js/bootstrap.min.js"></script>
 		<script src="app.js"></script>
 	</body>
