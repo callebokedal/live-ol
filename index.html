@@ -4,6 +4,7 @@
 		<meta charset="utf-8">
 			<!--<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">-->
 		<!--<meta name="viewport" content="width=device-width, initial-scale=1">-->
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<title>Live - OL</title>
 		<!--<link href="lib/css/bootstrap.min.css" rel="stylesheet">-->
 		<link href="lib/css/bootstrap_4.4.1_css_bootstrap.min.css" rel="stylesheet">
@@ -12,16 +13,16 @@
 	</head>
 	<body>
 
-		<div class="container-fluid">
+		<nav class="navbar sticky-top bg-dark justify-content-end p-1">
 			<ul class="nav nav-pills justify-content-end">
 				<li class="nav-item">
-					<a class="nav-link" href="#">Inställningar</a>
+					<a class="nav-link text-white" href="#">Inställningar</a>
 				</li>
 				<li class="nav-item">
-					<a class="nav-link active" href="#">Tävlingar</a>
+					<a class="nav-link text-white active" href="#">Tävlingar</a>
 				</li>
 				<li class="nav-item dropdown">
-					<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Klasser</a>
+					<a class="nav-link dropdown-toggle disabled" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Klasser</a>
 					<div class="dropdown-menu">
 						<a class="dropdown-item" href="#">Gul</a>
 						<a class="dropdown-item" href="#">Svart</a>
@@ -31,16 +32,21 @@
 					</div>
 				</li>
 			</ul>
-			</div>
+		</nav>
 
-			<div class="container-fluid">
+		<div class="container p-1">
+
+
 
 			<!-- Competitions -->
 			<ul class="list-group" id="competitions">
-				<div class="spinner-border text-success" role="status">
-					<span class="sr-only">Laddar...</span>
+				
+				<div class="alert alert-primary m-3 d-flex justify-content-start flex-row align-items-center" role="alert">
+					<div class="spinner-border text-success" role="status">
+						<span class="sr-only">Laddar...</span>
+					</div>
+					<span class="d-flex ml-3">Laddar tävlingar...</span>
 				</div>
-				<div>Laddar...</div>
 			</ul>
 			<!-- Competitions end -->
 
@@ -111,6 +117,9 @@
 			</div>-->
 
 		</div>
+		<footer class="container">
+			<small class="d-flex justify-content-end text-muted">Live OL Results</small>
+		</footer>
 		<script src="lib/js/moment.js"></script>
 		<script src="lib/js/jquery-3.5.0.min.js"></script>
 		<script src="lib/js/bootstrap.min.js"></script>
