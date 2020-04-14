@@ -25,8 +25,8 @@ getCompetitions = () => {
   debug("getCompetitions");
 
   let settings = loadSettings(defaultSettings)
-
   let cachedCompetitions = getCompetitionsListCache(settings)
+  
   if(Object.keys(cachedCompetitions).length > 0) {
     // Return cahced list
     console.log("Return cached competitions")
@@ -97,7 +97,6 @@ getCompetitionsListCache = (settings) => {
   if(secondsSinceLastFetch <= settings.competitionCacheTTL) {
     // Return cached list
     cachedCompetitions = localStorage.getItem("cachedCompetitions") ? JSON.parse(localStorage.getItem("cachedCompetitions")) : {};
-    
   }
   return cachedCompetitions
 }
@@ -143,11 +142,6 @@ loadSettings = (defaultSettings) => {
   if(settings.version !== version) {
     debug("Version diff: " + settings.version + " is not: " + version)
   }
-  //localStorage.setItem("settings", JSON.stringify(settings));
-
-  //let cachedCompetitions = localStorage.getItem("cachedCompetitions") ? JSON.parse(localStorage.getItem("cachedCompetitions")) : {};
-  //localStorage.setItem("cachedCompetitions", JSON.stringify(cachedCompetitions));
-
   return settings;
 }
 

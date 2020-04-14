@@ -27,18 +27,17 @@
 	</head>
 	<body>
 
-		<nav class="navbar sticky-top bg-dark justify-content-end p-1">
+		<nav class="navbar sticky-top bg-dark justify-content-center p-1">
 			<ul class="nav nav-pills justify-content-end">
 				<li class="nav-item">
 					<div class="nav-link text-white" href="#" data-toggle="modal" data-target="#settingsBackdrop">Inställningar</div>
-					<!-- <button type="button" data-toggle="modal" data-target="#settingsBackdrop">Launch modal</button> -->
 				</li>
 				<li class="nav-item">
 					<a class="nav-link text-white active" href="#">Tävlingar</a>
 				</li>
-				<li class="nav-item dropdown">
+				<li class="nav-item dropdown pl-1">
 					<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Klasser</a>
-					<div class="dropdown-menu">
+					<div class="dropdown-menu dropdown-menu-right">
 						<a class="dropdown-item" href="#">Gul</a>
 						<a class="dropdown-item" href="#">Svart</a>
 						<a class="dropdown-item" href="#">Grön</a>
@@ -50,12 +49,11 @@
 		</nav>
 
 		<!-- Settings -->
-
 		<div class="modal fade" id="settingsBackdrop" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="settingsBackdropLabel" aria-hidden="true">
 			<div class="modal-dialog" role="document">
 				<div class="modal-content">
 					<div class="modal-header">
-						<h5 class="modal-title" id="settingsBackdropLabel">Modal title</h5>
+						<h5 class="modal-title" id="settingsBackdropLabel">Inställningar</h5>
 						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 							<span aria-hidden="true">&times;</span>
 						</button>
@@ -64,32 +62,12 @@
 						...
 					</div>
 					<div class="modal-footer">
-						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-						<button type="button" class="btn btn-primary">Understood</button>
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Avbryt</button>
+						<button type="button" class="btn btn-primary">Spara</button>
 					</div>
 				</div>
 			</div>
 		</div>
-
-		<!--<ul class="nav nav-pills justify-content-end p-2">
-			<li class="nav-item">
-				<div class="nav-link text-white" href="#" data-toggle="modal" data-target="#settingsBackdrop">Inställningar</div>
-			</li>
-			<li class="nav-item">
-				<a class="nav-link text-white active" href="#">Tävlingar</a>
-			</li>
-			<li class="nav-item dropdown">
-				<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Klasser</a>
-				<div class="dropdown-menu">
-					<a class="dropdown-item" href="#">Gul</a>
-					<a class="dropdown-item" href="#">Svart</a>
-					<a class="dropdown-item" href="#">Grön</a>
-					<div class="dropdown-divider"></div>
-					<a class="dropdown-item" href="#">Separated link</a>
-				</div>
-			</li>
-		</ul>-->
-
 		<!-- Settings end -->
 
 		<div class="container p-1">
@@ -106,11 +84,11 @@
 			<!-- Competitions end -->
 
 			<!-- Classes -->
-			<ul class="list-group invisible" id="classes">			
+			<!--<ul class="list-group" id="classes">			
 				<div class="alert alert-primary p-1 m-1 d-flex justify-content-start flex-row align-items-center" role="alert">
 					<span class="d-flex ml-3">Classes</span>
 				</div>
-			</ul>
+			</ul>-->
 			<!--<table class="table table-sm table-striped table-dark">
 				<thead>
 					<tr>
@@ -176,13 +154,14 @@
 
 		</div>
 		<footer class="container">
-			<small class="d-flex justify-content-end text-muted">Live OL Results</small>
+			<small class="d-flex justify-content-end text-muted">Live OL Results - <a class="pl-1" href="https://github.com/callebokedal/live-ol">github.com/callebokedal/live-ol</a></small>
 		</footer>
 		<script src="lib/js/popper.js"></script>
 		<script src="lib/js/moment.js"></script>
 		<!-- <script src="lib/js/purify.min.js"></script> -->
 		<script src="lib/js/jquery-3.5.0.min.js"></script>
-		<script src="lib/js/bootstrap.min.js"></script>
+		<!--<script src="lib/js/bootstrap.min.js"></script>-->
+		<script src="lib/js/bootstrap.4.4.1.min.js"></script>
 		<script src="app.js"></script>
 	</body>
 </html>
