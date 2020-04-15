@@ -58,12 +58,11 @@
 							<span aria-hidden="true">&times;</span>
 						</button>
 					</div>
-					<div class="modal-body">
-						...
+					<div class="modal-body" id="settings">
 					</div>
 					<div class="modal-footer">
-						<button type="button" class="btn btn-secondary" data-dismiss="modal">Avbryt</button>
-						<button type="button" class="btn btn-primary">Spara</button>
+						<button type="button" class="btn btn-primary" data-dismiss="modal">Stäng</button>
+						<!--<button type="button" class="btn btn-primary">Spara</button>-->
 					</div>
 				</div>
 			</div>
@@ -73,6 +72,10 @@
 		<div class="container p-1">
 
 			<!-- Competitions -->
+			<div class="custom-control custom-switch m-2 d-flex justify-content-end">
+				<input type="checkbox" class="custom-control-input" id="onlyOrganizerFavorites">
+				<label class="custom-control-label" for="onlyOrganizerFavorites">Endast favoriter</label>
+			</div>
 			<ul class="list-group" id="competitions">				
 				<div class="alert alert-primary m-3 d-flex justify-content-start flex-row align-items-center" role="alert">
 					<div class="spinner-border text-success" role="status">
@@ -84,11 +87,11 @@
 			<!-- Competitions end -->
 
 			<!-- Classes -->
-			<!--<ul class="list-group" id="classes">			
+			<ul class="list-group d-none" id="classes">			
 				<div class="alert alert-primary p-1 m-1 d-flex justify-content-start flex-row align-items-center" role="alert">
 					<span class="d-flex ml-3">Classes</span>
 				</div>
-			</ul>-->
+			</ul>
 			<!--<table class="table table-sm table-striped table-dark">
 				<thead>
 					<tr>
