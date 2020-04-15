@@ -110,7 +110,7 @@ getCompetitionsListCache = (settings) => {
   return cachedCompetitions
 }
 
-generateFavoriteSVGMarkup = (isFavorite) => {
+generateFavoriteSVG = (isFavorite) => {
   let html = ''
   if(isFavorite) {
     html += '<svg class="bi bi-star-fill text-warning" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">'
@@ -122,6 +122,18 @@ generateFavoriteSVGMarkup = (isFavorite) => {
     html += '</svg>'
   }
   return html
+}
+
+const didNotStartSVG = '<svg class="bi bi-exclamation-octagon-fill text-danger" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M11.46.146A.5.5 0 0011.107 0H4.893a.5.5 0 00-.353.146L.146 4.54A.5.5 0 000 4.893v6.214a.5.5 0 00.146.353l4.394 4.394a.5.5 0 00.353.146h6.214a.5.5 0 00.353-.146l4.394-4.394a.5.5 0 00.146-.353V4.893a.5.5 0 00-.146-.353L11.46.146zM8 4a.905.905 0 00-.9.995l.35 3.507a.552.552 0 001.1 0l.35-3.507A.905.905 0 008 4zm.002 6a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd"/></svg>'
+const didNotFinishSVG = '<svg class="bi bi-x text-danger" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M11.854 4.146a.5.5 0 010 .708l-7 7a.5.5 0 01-.708-.708l7-7a.5.5 0 01.708 0z" clip-rule="evenodd"/><path fill-rule="evenodd" d="M4.146 4.146a.5.5 0 000 .708l7 7a.5.5 0 00.708-.708l-7-7a.5.5 0 00-.708 0z" clip-rule="evenodd"/></svg>'
+generateResultTimeStatus = (status) => {
+  if(status == "ej start") {
+    return didNotStartSVG + '<small class="pl-1">Ej start</small>'
+  } else if(status == "utgått") {
+    return didNotFinishSVG + '<small class="pl-1">Utgått</small>'
+  } else {
+    return status
+  }
 }
 
 generateCompetitionsList = (data) => {
@@ -144,15 +156,15 @@ generateCompetitionsList = (data) => {
           html += '<small class="mr-2">' + data.organizer + '</small>'
           if(settings.favoriteOrganizors.indexOf(data.organizer) !== -1) {
             html += '<a href="#" class="d-inline-flex" onclick="quickRemoveFavoriteOrganizer(\'' + data.organizer + '\')">' 
-            html += generateFavoriteSVGMarkup(true)
+            html += generateFavoriteSVG(true)
           } else {
             html += '<a href="#" class="d-inline-flex" onclick="quickAddFavoriteOrganizer(\'' + data.organizer + '\')">' 
-            html += generateFavoriteSVGMarkup(false)
+            html += generateFavoriteSVG(false)
           } 
           html += '</a>'
 
         html += '</div>'
-        html += '<h6 class="d-flex align-items-end flex-column mb-1 mt-1"><a href="#"' + data.id + ' class="name">' + data.name + '</a></h6>'
+        html += '<h6 class="d-flex align-items-end flex-column mb-1 mt-1"><a href="#c=' + data.id + '" onclick="showCompetitionResults(' + data.id + ')" class="name">' + data.name + '</a></h6>'
       html += '</li>'
 
     });
@@ -163,8 +175,56 @@ generateCompetitionsList = (data) => {
   }
 }
 
-getClasses = () => {
-  debug("get classes")
+let lastPassingsHash = ""
+getLastPassings = (compId) => {
+  debug("get results")
+
+  if(!Number.isInteger(compId)) {
+    console.error("Illegal competitonsId: " + compId)
+    return
+  }
+
+  // Fetch new data
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", "https://liveresultat.orientering.se/api.php?method=getlastpassings&comp=" + compId + "&last_hash=" + lastPassingsHash);
+  xhr.send(null);
+
+  xhr.addEventListener("loadend", function() {
+    var json = JSON.parse(xhr.response);
+    if (xhr.status === 401) {
+      console.log("Can't last passings")
+    } else if (xhr.status === 200 && json.status == "OK") {
+      passings = json.passings;
+      lastPassingsHash = json.hash;
+
+      debug(passings)
+      debug(lastPassingsHash)
+
+//class: "Svart mellan"
+//control: 1000
+//controlName: ""
+//passtime: "12:19:40"
+//runnerName: "Magnus O"
+//time: "ej start"
+
+      let html = ""
+      passings.forEach(data => {
+        html += '<li class="list-group-item bg-light p-2">'
+          html += '<small class="mr-2">' + data.passtime + '</small>'
+          html += '<small class="mr-2 font-weight-bold">' + data.runnerName + '</small>'
+          html += '<small class="mr-auto">' + generateResultTimeStatus(data.time) + '</small>'
+        html += '</li>'
+      });
+
+      // let filtered = filterCompetitions(competitions, settings)
+      // debug("xhr filtered: " + JSON.stringify(filtered))
+      // saveCompetitionsListCache(filtered)
+      // generateCompetitionsList(filtered)
+      document.getElementById("passings").innerHTML = html;
+    } else {
+      console.log("No response!")
+    }
+  });
 }
 
 filterClasses = (id) => {
@@ -245,6 +305,24 @@ saveSettings = (settings) => {
   debug("save settings: " + JSON.stringify(settings))
   localStorage.setItem("settings", JSON.stringify(settings))
   generateSettingsList(settings)
+}
+
+showCompetitionScreen = () => {
+  $('#competitonsLabel').addClass('active')
+  $('#resultsLabel').removeClass('active')
+  $('#competitionsContainer').removeClass('d-none')
+  $('#resultsContainer').addClass('d-none')
+}
+showResultScreen = () => {
+  $('#competitonsLabel').removeClass('active')
+  $('#resultsLabel').addClass('active')
+  $('#competitionsContainer').addClass('d-none')
+  $('#resultsContainer').removeClass('d-none')
+}
+
+showCompetitionResults = (id) => {
+  showResultScreen()
+  getLastPassings(id)
 }
 
 // EVENT LISTENERS 

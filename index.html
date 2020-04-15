@@ -28,14 +28,18 @@
 	<body>
 
 		<nav class="navbar sticky-top bg-dark justify-content-center p-1">
+			<img src="favicon/favicon-32x32.png" alt="Live OL Logo">
 			<ul class="nav nav-pills justify-content-end">
 				<li class="nav-item">
 					<div class="nav-link text-white" href="#" data-toggle="modal" data-target="#settingsBackdrop">Inställningar</div>
 				</li>
 				<li class="nav-item">
-					<a class="nav-link text-white active" href="#">Tävlingar</a>
+					<a class="nav-link text-white active" id="competitonsLabel" href="#" onclick="showCompetitionScreen()">Tävlingar</a>
 				</li>
-				<li class="nav-item dropdown pl-1">
+				<li class="nav-item">
+					<a class="nav-link text-white" id="resultsLabel" href="#" onclick="showResultScreen()">Resultat</a>
+				</li>
+				<!--<li class="nav-item dropdown pl-1">
 					<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Klasser</a>
 					<div class="dropdown-menu dropdown-menu-right">
 						<a class="dropdown-item" href="#">Gul</a>
@@ -44,7 +48,7 @@
 						<div class="dropdown-divider"></div>
 						<a class="dropdown-item" href="#">Separated link</a>
 					</div>
-				</li>
+				</li>-->
 			</ul>
 		</nav>
 
@@ -69,7 +73,7 @@
 		</div>
 		<!-- Settings end -->
 
-		<div class="container p-1">
+		<div class="container p-1" id="competitionsContainer">
 
 			<!-- Competitions -->
 			<div class="custom-control custom-switch m-2 d-flex justify-content-end">
@@ -86,10 +90,26 @@
 			</ul>
 			<!-- Competitions end -->
 
+		</div>
+
+		<div class="container p-1 d-none" id="resultsContainer">
+
+			<!-- Last passings -->
+			<small class="font-weight-bold">Senaste passeringar</small>
+			<ul class="list-group" id="passings">
+				<div class="alert alert-primary m-3 d-flex justify-content-start flex-row align-items-center" role="alert">
+					<div class="spinner-border text-success" role="status">
+						<span class="sr-only">Laddar...</span>
+					</div>
+					<span class="d-flex ml-3">Laddar resultat...</span>
+				</div>
+			</ul>
+			<!-- Last passings end -->
+
 			<!-- Classes -->
 			<ul class="list-group d-none" id="classes">			
 				<div class="alert alert-primary p-1 m-1 d-flex justify-content-start flex-row align-items-center" role="alert">
-					<span class="d-flex ml-3">Classes</span>
+					<span class="d-flex ml-3">Klasser</span>
 				</div>
 			</ul>
 			<!--<table class="table table-sm table-striped table-dark">
