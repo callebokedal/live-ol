@@ -28,7 +28,7 @@
 	<body>
 
 		<nav class="navbar sticky-top bg-dark justify-content-center p-1">
-			<img src="favicon/favicon-32x32.png" alt="Live OL Logo">
+			<img src="favicon/favicon-32x32.png" alt="Live OL Logo" id="logo">
 			<ul class="nav nav-pills justify-content-end">
 				<li class="nav-item">
 					<div class="nav-link text-white" href="#" data-toggle="modal" data-target="#settingsBackdrop">Inställningar</div>
@@ -94,6 +94,8 @@
 
 		<div class="container p-1 d-none" id="resultsContainer">
 
+			<h6 id="competitionName" class="d-flex flex-row-reverse p-1"></h6>
+
 			<!-- Last passings -->
 			<small class="font-weight-bold">Senaste passeringar</small>
 			<ul class="list-group" id="passings">
@@ -107,11 +109,44 @@
 			<!-- Last passings end -->
 
 			<!-- Classes -->
-			<ul class="list-group d-none" id="classes">			
-				<div class="alert alert-primary p-1 m-1 d-flex justify-content-start flex-row align-items-center" role="alert">
-					<span class="d-flex ml-3">Klasser</span>
+			<!--<div class="dropdown">
+				<button class="btn btn-secondary btn-sm" type="button" data-toggle="dropdown" id="dropdownClassesButton" aria-haspopup="true" aria-expanded="false">
+					Klasser
+				</button>
+				<div class="dropdown-classes p-2" aria-labelledby="dropdownClassesButton" id="classes">
+					<a class="dropdown-item" href="#"></a>
 				</div>
-			</ul>
+			</div>-->
+			<small class="font-weight-bold">Klasser</small>
+			<div id="classes" class=""></div>
+
+
+			<small class="font-weight-bold">Resultat</small>
+			<div id="classResults">
+				<table class="table table-sm table-striped table-dark">
+				<thead>
+					<tr>
+						<th scope="col">#</th>
+						<th scope="col">Namn</th>
+						<th scope="col">Start</th>
+						<th scope="col">Mål</th>
+						<th scope="col">Diff</th>
+					</tr>
+				</thead>
+				<tbody id="classResultRows">
+				</tbody>
+				</table>
+			</div>
+			<!--<div class="btn-group btn-group-toggle btn-group-sm text-nowrap d-flex flex-wrap" data-toggle="buttons" id="classes">
+			</div>-->
+			<!--<ul class="list-group" id="classResult">
+				<div class="alert alert-primary m-3 d-flex justify-content-start flex-row align-items-center" role="alert">
+					<div class="spinner-border text-success" role="status">
+						<span class="sr-only">Laddar...</span>
+					</div>
+					<span class="d-flex ml-3">Laddar klasser...</span>
+				</div>
+			</ul>-->
 			<!--<table class="table table-sm table-striped table-dark">
 				<thead>
 					<tr>
@@ -179,10 +214,10 @@
 		<footer class="container">
 			<small class="d-flex justify-content-end text-muted">Live OL Results - <a class="pl-1" href="https://github.com/callebokedal/live-ol">github.com/callebokedal/live-ol</a></small>
 		</footer>
-		<script src="lib/js/popper.js"></script>
 		<script src="lib/js/moment.js"></script>
 		<!-- <script src="lib/js/purify.min.js"></script> -->
 		<script src="lib/js/jquery-3.5.0.min.js"></script>
+		<script src="lib/js/popper.js"></script>
 		<!--<script src="lib/js/bootstrap.min.js"></script>-->
 		<script src="lib/js/bootstrap.4.4.1.min.js"></script>
 		<script src="app.js"></script>
