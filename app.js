@@ -340,10 +340,10 @@ getClassResult = (competitionId, className, e) => {
         // {"place":"3","name":"Leif Orienterare","club":"Sjövalla FK","result":"38:11","status":0,"timeplus":"+05:41","progress":100,"start":3716900}
         html += '<tr>'
           html += '<th class="small text-center" scope="row">' + data.place + '</th>'
-          html += '<td class="small">' + data.name + '<br>(' + data.club + ')</td>'
-          html += '<td class="small">' + moment(data.start * 10).subtract(1,'hour').format("hh:mm:ss") + '</td>' // Summertime. What happens in wintertime??
-          html += '<td class="small">' + data.result + '</td>'
-          html += '<td class="small">' + data.timeplus + '</td>'
+          html += '<td class="small">' + data.name + '<a href="#" onclick="getClubResult(\'' + competitionId + '\',\'' + data.club + '\')">(' + data.club + ')</a></td>'
+          html += '<td class="small text-center"">' + moment(data.start * 10).subtract(1,'hour').format("hh:mm:ss") + '</td>' // Summertime. What happens in wintertime??
+          html += '<td class="small text-center"">' + data.result + '</td>'
+          html += '<td class="small text-center"">' + data.timeplus + '</td>'
         html += '</tr><!-- ' + data.status + ', ' + data.progress + ' -->'
       });
       //classes.forEach((data, idx) => {
@@ -353,6 +353,51 @@ getClassResult = (competitionId, className, e) => {
       document.getElementById("classResultRows").innerHTML = html
     }
   });
+}
+
+// api.php?comp=10259&method=getcclubresults&unformattedTimes=true&club=Klyftamo
+let lastClubResultHash = ""
+getClubResult = (competitionId, clubName) => {
+  debug("get clubresult: " + competitionId + ", " + clubName)
+  //debug(e)
+  //$(e).toggleClass("active")
+  //$(e).toggleClass("btn-primary")
+  //$(e).toggleClass("btn-secondary")
+  activateClassButtons(clubName)
+
+  // Fetch new data
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", "https://liveresultat.orientering.se/api.php?method=getclubresults&comp=" + competitionId + "&unformattedTimes=false&club=" + clubName + "&last_hash=" + lastClubResultHash);
+  xhr.send(null);
+
+  xhr.addEventListener("loadend", function() {
+    var json = JSON.parse(xhr.response);
+    if (xhr.status === 401) {
+      console.log("Can't last passings")
+    } else if (xhr.status === 200 && json.status == "OK") {
+      let clubResult = json.results;
+      lastClubResultHash = json.hash;
+
+      debug(clubResult)
+
+      let html = ""
+      clubResult.forEach((data, idx) => {
+        html += '<tr>'
+          html += '<th class="small text-center" scope="row">' + data.place + '</th>'
+          html += '<td class="small">' + data.name + '<br>(' + data.club + ')</td>'
+          html += '<td class="small text-center"">' + moment(data.start * 10).subtract(1,'hour').format("hh:mm:ss") + '</td>' // Summertime. What happens in wintertime??
+          html += '<td class="small text-center"">' + data.result + '</td>'
+          html += '<td class="small text-center"">' + data.timeplus + '</td>'
+        html += '</tr><!-- ' + data.status + ', ' + data.progress + ' -->'
+      });
+      //classes.forEach((data, idx) => {
+      //  html += '<a class="dropdown-item" href="#">' + data.className + '</a>'
+      //});
+
+      document.getElementById("classResultRows").innerHTML = html
+    }
+  });
+
 }
 
 filterClasses = (id) => {
