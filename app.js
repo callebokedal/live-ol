@@ -307,7 +307,8 @@ getClasses = (competitionId) => {
 
       let html = ""
       classes.forEach((data, idx) => {
-        html += '<button type="button" class="btn btn-sm btn-secondary mr-1 mb-1 mt-0 ml-0 pl-1 pr-1 pt-0 pb-0" onclick="getClassResult(' + competitionId + ',\'' + data.className + '\')">' + data.className + '</button>'
+        //html += '<button type="button" class="btn btn-secondary mr-1 mb-1 mt-0 ml-0 pl-1 pr-1 pt-0 pb-0" onclick="getClassResult(' + competitionId + ',\'' + data.className + '\')">' + data.className + '</button>'
+        html += '<button type="button" class="btn btn-secondary mr-2 mb-2 mt-0 ml-0 pl-2 pr-2 pt-0 pb-0" onclick="getClassResult(' + competitionId + ',\'' + data.className + '\')">' + data.className + '</button>'
       });
       //classes.forEach((data, idx) => {
       //  html += '<a class="dropdown-item" href="#">' + data.className + '</a>'
@@ -398,7 +399,7 @@ getClassResult = (competitionId, className) => {
       //  html += '<a class="dropdown-item" href="#">' + data.className + '</a>'
       //});
 
-      document.getElementById("classResultRows").innerHTML = html
+      document.getElementById("resultRows").innerHTML = html
     } else {
       debug("what?" + xhr.status + ", " + json.status)
       debug(json)
@@ -456,7 +457,7 @@ getClubResult = (competitionId, clubName) => {
       //  html += '<a class="dropdown-item" href="#">' + data.className + '</a>'
       //});
 
-      document.getElementById("classResultRows").innerHTML = html
+      document.getElementById("resultRows").innerHTML = html
     }
   });
 
