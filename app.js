@@ -11,8 +11,33 @@ const defaultSettings = {
   "favoriteOrganizors": ["Sjövalla FK", "Lerums SOK"] 
 }
 
-let competitions;
-let classes;
+const hashCache = new Map();
+loadHash = (key) => {
+  debug("load: " + key)
+  if(hashCache.has(key)) {
+    debug(hashCache.get(key))
+    return hashCache.get(key)
+  } else {
+    return ""
+  }
+}
+saveHash = (key, value) => {
+  debug("key + value: " + key + "=" + value)
+  hashCache.set(key, value)
+}
+
+// Results are cached - we need to stor local copy
+const resultCache = new Map();
+loadResult = (key) => {
+  if(resultCache.has(key)) {
+    return resultCache.get(key)
+  } else {
+    return {}
+  }
+}
+saveResult = (key, data) => {
+  resultCache.set(key,data)
+}
 
 getCompetitions = () => {
   debug("getCompetitions");
@@ -39,6 +64,7 @@ getCompetitions = () => {
       if (xhr.status === 401) {
         console.log("Can't access competitions")
       } else if (xhr.status === 200 && json.competitions) {
+        //debug("competitions: " + JSON.stringify(json))
         competitions = json.competitions;
 
         let filtered = filterCompetitions(competitions, settings)
@@ -194,9 +220,10 @@ generateCompetitionsList = (data) => {
 }
 
 // api.php?method=getclasses&comp=XXXX&last_hash=abcdefg
-let lastPassingsHash = ""
+//let lastPassingsHash = ""
 getLastPassings = (competitionId) => {
   debug("get results")
+  let hashKey = "pass"+competitionId
 
   if(!Number.isInteger(competitionId)) {
     console.error("Illegal competitonsId: " + competitionId)
@@ -205,19 +232,25 @@ getLastPassings = (competitionId) => {
 
   // Fetch new data
   var xhr = new XMLHttpRequest();
-  xhr.open("GET", "https://liveresultat.orientering.se/api.php?method=getlastpassings&comp=" + competitionId + "&last_hash=" + lastPassingsHash);
+  xhr.open("GET", "https://liveresultat.orientering.se/api.php?method=getlastpassings&comp=" + competitionId + "&last_hash=" + loadHash(hashKey));
   xhr.send(null);
 
   xhr.addEventListener("loadend", function() {
     var json = JSON.parse(xhr.response);
     if (xhr.status === 401) {
       console.log("Can't last passings")
-    } else if (xhr.status === 200 && json.status == "OK") {
+    } else if (xhr.status === 200) {
+      if(json.status == "NOT MODIFIED") {
+        json = loadResult(hashKey)
+      } else {
+        saveResult(hashKey, json)
+      }
+
       let passings = json.passings;
-      lastPassingsHash = json.hash;
+      saveHash("pass"+competitionId, json.hash);
 
       debug(passings)
-      debug(lastPassingsHash)
+      debug(loadHash("pass"+competitionId))
 
       //class: "Svart mellan"
       //control: 1000
@@ -244,9 +277,10 @@ getLastPassings = (competitionId) => {
 }
 
 // api.php?method=getclasses&comp=XXXX&last_hash=abcdefg
-let lastClassesHash = ""
+//let lastClassesHash = ""
 getClasses = (competitionId) => {
   debug("get classes: " + competitionId)
+  let hashKey = "classes"+competitionId
 
   if(!Number.isInteger(competitionId)) {
     console.error("Illegal competitonsId: " + competitionId)
@@ -255,20 +289,25 @@ getClasses = (competitionId) => {
 
   // Fetch new data
   var xhr = new XMLHttpRequest();
-  xhr.open("GET", "https://liveresultat.orientering.se/api.php?method=getclasses&comp=" + competitionId + "&last_hash=" + lastClassesHash);
+  xhr.open("GET", "https://liveresultat.orientering.se/api.php?method=getclasses&comp=" + competitionId + "&last_hash=" + loadHash(hashKey));
   xhr.send(null);
 
   xhr.addEventListener("loadend", function() {
     var json = JSON.parse(xhr.response);
     if (xhr.status === 401) {
       console.log("Can't last passings")
-    } else if (xhr.status === 200 && json.status == "OK") {
+    } else if (xhr.status === 200) {
+      if(json.status == "NOT MODIFIED") {
+        json = loadResult(hashKey)
+      } else {
+        saveResult(hashKey, json)
+      }
       let classes = json.classes;
-      lastClassesHash = json.hash;
+      saveHash(hashKey, json.hash);
 
       let html = ""
       classes.forEach((data, idx) => {
-        html += '<button type="button" class="btn btn-sm btn-secondary mr-1 mb-1 mt-0 ml-0 pl-1 pr-1 pt-0 pb-0" onclick="getClassResult(' + competitionId + ',\'' + data.className + '\',this)">' + data.className + '</button>'
+        html += '<button type="button" class="btn btn-sm btn-secondary mr-1 mb-1 mt-0 ml-0 pl-1 pr-1 pt-0 pb-0" onclick="getClassResult(' + competitionId + ',\'' + data.className + '\')">' + data.className + '</button>'
       });
       //classes.forEach((data, idx) => {
       //  html += '<a class="dropdown-item" href="#">' + data.className + '</a>'
@@ -279,6 +318,8 @@ getClasses = (competitionId) => {
       //$('#dropdownClassesButton').dropdown()
       //$('.dropdown-classes').dropdown('update')
       //$('.dropdown-classes').dropdown()
+    } else {
+      debug("what?")
     }
   });
 }
@@ -298,9 +339,10 @@ activateClassButtons = (className) => {
 }
 
 // api.php?comp=10259&method=getclassresults&unformattedTimes=true&class=Öppen-1
-let lastClassResultHash = ""
-getClassResult = (competitionId, className, e) => {
+//let lastClassResultHash = ""
+getClassResult = (competitionId, className) => {
   debug("get classresult: " + competitionId + ", " + className)
+  let hashKey = "className"+competitionId+className
   //debug(e)
   //$(e).toggleClass("active")
   //$(e).toggleClass("btn-primary")
@@ -309,16 +351,21 @@ getClassResult = (competitionId, className, e) => {
 
   // Fetch new data
   var xhr = new XMLHttpRequest();
-  xhr.open("GET", "https://liveresultat.orientering.se/api.php?method=getclassresults&comp=" + competitionId + "&unformattedTimes=false&class=" + className + "&last_hash=" + lastClassResultHash);
+  xhr.open("GET", "https://liveresultat.orientering.se/api.php?method=getclassresults&comp=" + competitionId + "&unformattedTimes=false&class=" + className + "&last_hash=" + loadHash(hashKey));
   xhr.send(null);
 
   xhr.addEventListener("loadend", function() {
     var json = JSON.parse(xhr.response);
     if (xhr.status === 401) {
       console.log("Can't last passings")
-    } else if (xhr.status === 200 && json.status == "OK") {
+    } else if (xhr.status === 200) {
+      if(json.status == "NOT MODIFIED") {
+        json = loadResult(hashKey)
+      } else {
+        saveResult(hashKey, json)
+      }
       let classResult = json.results;
-      lastClassResultHash = json.hash;
+      saveHash(hashKey, json.hash);
 
       debug(classResult)
 
@@ -339,8 +386,8 @@ getClassResult = (competitionId, className, e) => {
 
         // {"place":"3","name":"Leif Orienterare","club":"Sjövalla FK","result":"38:11","status":0,"timeplus":"+05:41","progress":100,"start":3716900}
         html += '<tr>'
-          html += '<th class="small text-center" scope="row">' + data.place + '</th>'
-          html += '<td class="small">' + data.name + '<a href="#" onclick="getClubResult(\'' + competitionId + '\',\'' + data.club + '\')">(' + data.club + ')</a></td>'
+          html += '<th class="text-center" scope="row">' + data.place + '</th>'
+          html += '<td class="">' + data.name + '<br><a href="#" class="text-warning" onclick="getClubResult(\'' + competitionId + '\',\'' + data.club + '\')">' + data.club + '</a></td>'
           html += '<td class="small text-center"">' + moment(data.start * 10).subtract(1,'hour').format("hh:mm:ss") + '</td>' // Summertime. What happens in wintertime??
           html += '<td class="small text-center"">' + data.result + '</td>'
           html += '<td class="small text-center"">' + data.timeplus + '</td>'
@@ -351,14 +398,18 @@ getClassResult = (competitionId, className, e) => {
       //});
 
       document.getElementById("classResultRows").innerHTML = html
+    } else {
+      debug("what?" + xhr.status + ", " + json.status)
+      debug(json)
     }
   });
 }
 
 // api.php?comp=10259&method=getcclubresults&unformattedTimes=true&club=Klyftamo
-let lastClubResultHash = ""
+//let lastClubResultHash = ""
 getClubResult = (competitionId, clubName) => {
   debug("get clubresult: " + competitionId + ", " + clubName)
+  let hashKey = "clubName"+competitionId+clubName
   //debug(e)
   //$(e).toggleClass("active")
   //$(e).toggleClass("btn-primary")
@@ -367,24 +418,33 @@ getClubResult = (competitionId, clubName) => {
 
   // Fetch new data
   var xhr = new XMLHttpRequest();
-  xhr.open("GET", "https://liveresultat.orientering.se/api.php?method=getclubresults&comp=" + competitionId + "&unformattedTimes=false&club=" + clubName + "&last_hash=" + lastClubResultHash);
+  xhr.open("GET", "https://liveresultat.orientering.se/api.php?method=getclubresults&comp=" + competitionId + "&unformattedTimes=false&club=" + clubName + "&last_hash=" + loadHash(hashKey));
   xhr.send(null);
 
   xhr.addEventListener("loadend", function() {
     var json = JSON.parse(xhr.response);
     if (xhr.status === 401) {
       console.log("Can't last passings")
-    } else if (xhr.status === 200 && json.status == "OK") {
-      let clubResult = json.results;
-      lastClubResultHash = json.hash;
+    } else if (xhr.status === 200) {
+      if(json.status == "NOT MODIFIED") {
+        json = loadResult(hashKey)
+      } else {
+        saveResult(hashKey, json)
+      }
+      saveHash(hashKey, json.hash);
+      let clubResult = json.results.sort(function(a,b) {
+        let a1 = a.place.replace("-",2000)
+        let b1 = b.place.replace("-",2000)
+        return a1 - b1;
+      });
 
       debug(clubResult)
 
       let html = ""
       clubResult.forEach((data, idx) => {
         html += '<tr>'
-          html += '<th class="small text-center" scope="row">' + data.place + '</th>'
-          html += '<td class="small">' + data.name + '<br>(' + data.club + ')</td>'
+          html += '<th class="text-center" scope="row">' + data.place + '</th>'
+          html += '<td class="">' + data.name + '<br><a href="#" class="text-warning" onclick="getClassResult(' + competitionId + ', \'' + data.class + '\')">' + data.class + '</a></td>'
           html += '<td class="small text-center"">' + moment(data.start * 10).subtract(1,'hour').format("hh:mm:ss") + '</td>' // Summertime. What happens in wintertime??
           html += '<td class="small text-center"">' + data.result + '</td>'
           html += '<td class="small text-center"">' + data.timeplus + '</td>'
