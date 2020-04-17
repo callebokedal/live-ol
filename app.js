@@ -341,6 +341,7 @@ activateClassButtons = (className) => {
 // api.php?comp=10259&method=getclassresults&unformattedTimes=true&class=Öppen-1
 //let lastClassResultHash = ""
 getClassResult = (competitionId, className) => {
+  $("#resultLabel")[0].innerHTML = "Resultat - " + className
   debug("get classresult: " + competitionId + ", " + className)
   let hashKey = "className"+competitionId+className
   //debug(e)
@@ -408,6 +409,7 @@ getClassResult = (competitionId, className) => {
 // api.php?comp=10259&method=getcclubresults&unformattedTimes=true&club=Klyftamo
 //let lastClubResultHash = ""
 getClubResult = (competitionId, clubName) => {
+  $("#resultLabel")[0].innerHTML = "Resultat - " + clubName
   debug("get clubresult: " + competitionId + ", " + clubName)
   let hashKey = "clubName"+competitionId+clubName
   //debug(e)
