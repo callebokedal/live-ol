@@ -489,7 +489,7 @@ generateSettingsList = () => {
     debug("loaded settings" + JSON.stringify(settings))
     let html = '<ul class="list-group">'
     html += '<li class="list-group-item bg-light">'
-    html += 'Visa ' + settings.competitionDayLimit + ' dagar gamla tävlingar'
+    html += 'Visa ' + safe(settings.competitionDayLimit) + ' dagar gamla tävlingar'
     html += '</li>'
 
     html += '<li class="list-group-item bg-light">'
@@ -503,7 +503,7 @@ generateSettingsList = () => {
     } else {
       settings.favoriteOrganizors.forEach((org,idx) => {
         html += '<li class="list-group-item bg-light d-flex">'
-        html += '<span class="p-0 flex-grow-1 align-self-center">' + org + '</span><button type="button" class="btn btn-danger btn-sm" onclick="removeFavoriteOrganizer(\'' + org + '\')">Ta bort</button>'
+        html += '<span class="p-0 flex-grow-1 align-self-center">' + safe(org) + '</span><button type="button" class="btn btn-danger btn-sm" onclick="removeFavoriteOrganizer(\'' + safe(org) + '\')">Ta bort</button>'
         html += '</li>'
       }); 
     }
@@ -513,9 +513,9 @@ generateSettingsList = () => {
     html += '</li>'
 
     html += '</ul>'
-    html += '<small class="p-2">Version: ' + settings.version + '</small>'
+    html += '<small class="p-2">Version: ' + safe(settings.version) + '</small>'
 
-    document.getElementById("settings").innerHTML = dp.sanitize(html);
+    document.getElementById("settings").innerHTML = html;
 }
 
 isBookmarked = (name, cachedSettings) => {
