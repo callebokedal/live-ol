@@ -378,10 +378,10 @@ getClassResult = (competitionId, className) => {
         html += '<tr>'
           if(isBookmarked(data.name, dirtySettings)) {
             html += '<td class="text-center" scope="row">' + data.place + '</td>'
-            html += '<td class="">' + data.name + '<span title="Avmarkera" class="pl-1 link" onclick="toggleBookmark(\'' + data.name + '\', this)">' + bookmarkedSVG + '</span>'
+            html += '<td class="">' + data.name + '<a href="#" title="Avmarkera" class="pl-1 link" onclick="toggleBookmark(\'' + data.name + '\', this);return false;">' + bookmarkedSVG + '</a>'
           } else {
             html += '<td class="text-center" scope="row">' + data.place + '</td>'
-            html += '<td class="">' + data.name + '<span title="Bokmärk" class="pl-1 link" onclick="toggleBookmark(\'' + data.name + '\', this)">' + bookmarkSVG + '</span>'
+            html += '<td class="">' + data.name + '<a href="#" title="Bokmärk" class="pl-1 link" onclick="toggleBookmark(\'' + data.name + '\', this);return false;">' + bookmarkSVG + '</a>'
           }
             html += '<br><a href="#" title="Visa klubbresultat" class="small text-warning" onclick="getClubResult(\'' + competitionId + '\',\'' + data.club + '\')">' + data.club + '</a></td>'
           html += '<td class="small text-center"">' + moment(data.start * 10).subtract(1,'hour').format("hh:mm:ss") + '</td>' // Summertime. What happens in wintertime??
@@ -436,12 +436,12 @@ getClubResult = (competitionId, clubName) => {
         html += '<tr>'
           if(isBookmarked(data.name, dirtySettings)) {
             html += '<td class="text-center" scope="row">' + data.place + '<br></td>'
-            html += '<td class="">' + data.name + '<span title="Avmarkera" class="pl-1 link" onclick="toggleBookmark(\'' + data.name + '\', this)">' + bookmarkedSVG + '</span><br>'
+            html += '<td class="">' + data.name + '<a href="#" title="Avmarkera" class="pl-1 link" onclick="toggleBookmark(\'' + data.name + '\', this);return false;">' + bookmarkedSVG + '</a><br>'
           } else {
             html += '<td class="text-center" scope="row">' + data.place + '<br></td>'
-            html += '<td class="">' + data.name + '<span title="Bokmärk" class="pl-1 link" onclick="toggleBookmark(\'' + data.name + '\', this)">' + bookmarkSVG + '</span><br>'
+            html += '<td class="">' + data.name + '<a href="#" title="Bokmärk" class="pl-1 link" onclick="toggleBookmark(\'' + data.name + '\', this);return false;">' + bookmarkSVG + '</a><br>'
           }
-          //html += '<td class="">' + data.name + '<span class="pl-1 link" onclick="toggleBookmark(\'' + data.name + '\', this)">' + bookmarkSVG + '</span><br>'
+          //html += '<td class="">' + data.name + '<span class="pl-1 link" onclick="toggleBookmark(\'' + data.name + '\', this);return false;">' + bookmarkSVG + '</span><br>'
           html += '<a href="#" title="Visa klassresultat" class="small text-warning" onclick="getClassResult(' + competitionId + ', \'' + data.class + '\')">' + data.class + '</a></td>'
           html += '<td class="small text-center"">' + moment(data.start * 10).subtract(1,'hour').format("hh:mm:ss") + '</td>' // Summertime. What happens in wintertime??
           html += '<td class="small text-center"">' + data.result + '</td>'
