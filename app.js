@@ -288,7 +288,7 @@ getLastPassings = (competitionId) => {
         html += '<li class="list-group-item bg-light p-2">'
           html += '<small class="mr-2">' + safe(data.passtime) + '</small>'
           html += '<small class="mr-2 font-weight-bold">' + safe(data.runnerName) + '</small>'
-          html += '<small class="mr-2">(' + safe(data.class) + ')</small>'
+          html += '<small class="mr-2">(<a href="#" onclick="getClassResult(' + competitionId + ',\'' + safe(data.class) + '\');return false">' + safe(data.class) + '</a>)</small>'
           //html += '<small class="mr-2">(' + data.controlName + ', ' + data.control + ')</small>'
           html += '<small class="mr-auto">' + safe(generateResultTimeStatus(data.time)) + '</small>'
         html += '</li>'
