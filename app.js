@@ -1,17 +1,37 @@
 // Init moment
 moment().format()
 
-const version = "1.2";
+const version = "1.3";
+
+const dp = DOMPurify;
+var dp_config = {
+  USE_PROFILES: {html: true},
+  //RETURN_DOM_FRAGMENT: true, 
+  //RETURN_DOM: false,
+  //ALLOWED_TAGS: ['table','tr','td','div','span','small','p'],
+  //KEEP_CONTENT: false,
+  ADD_TAGS: ['script', 'tr'],
+  ADD_ATTR: ['onclick','class']
+};
+let safe = DOMPurify.sanitize
+
+//const ScreenState = Object.freeze({"competitionsAll":1, "competitieonsFiltered":2, "classResultsAll":3, "classResultsFiltered":4, "clubResultsAll":5, "clubResultsFiltered":6})
 
 // Default settings 
 const defaultSettings = {
   "version": version, 
-  "competitionDayLimit": 7, 
+  "competitionDayLimit": 14, 
   "competitionCacheTTL": 120, 
-  "onlyFavorites": false,
-  "favoriteOrganizors": ["Sjövalla FK", "Lerums SOK"],
-  "bookmarks": []
+  "onlyClubFavorites": false,
+  "onlyPersonFavorites": false,
+  "favoriteOrganizors": ["Sjövalla FK"],
+  "bookmarks": [],
+//  "viewState": ScreenState.competitionsAll,
+//  "currentCompetition": null,
+//  "currentClassResult": null,
+//  "currentClubResult": null
 }
+//let settings
 
 const hashCache = new Map();
 loadHash = (key) => {
@@ -48,11 +68,9 @@ getCompetitions = () => {
   let cachedCompetitions = getCompetitionsListCache(settings)
 
   if(Object.keys(cachedCompetitions).length > 0) {
-    // Return cahced list
-    console.log("Return cached competitions: " + JSON.stringify(cachedCompetitions))
 
     let filtered = filterCompetitions(cachedCompetitions, settings)
-    debug("cache filtered: " + JSON.stringify(filtered))
+    //debug("cache filtered: " + JSON.stringify(filtered))
     generateCompetitionsList(filtered)
   } else {
     // Fetch new data
@@ -70,7 +88,6 @@ getCompetitions = () => {
         competitions = json.competitions;
 
         let filtered = filterCompetitions(competitions, settings)
-        debug("xhr filtered: " + JSON.stringify(filtered))
 
         saveCompetitionsListCache(filtered)
         generateCompetitionsList(filtered)
@@ -84,7 +101,7 @@ getCompetitions = () => {
 filterCompetitions = (competitions, settings) => {
   //debug("before filter: " + competitions)
   // Get settings
-  let filterDays = 7;
+  let filterDays = 14;
   if(Number.isInteger(settings.competitionDayLimit)) {
     filterDays = settings.competitionDayLimit
   }
@@ -196,25 +213,31 @@ generateCompetitionsList = (data) => {
         badgeClass = "badge badge-dark"
       }
 
-      html += '<tr>'
-        html += '<td class="" scope="row">'
+      html += '<table><tr>'
+        html += '<td scope="row">'
         html += '<div class="mb-1 d-flex">'
-          html += '<small class=" align-middle">' + data.organizer + '</small>'
+          html += '<small class="align-middle">' + safe(data.organizer) + '</small>'
           if(settings.favoriteOrganizors.indexOf(data.organizer) !== -1) {
-            html += '<a href="#" class="flex-grow-1 mr-1 ml-1 small" onclick="quickRemoveFavoriteOrganizer(\'' + data.organizer + '\')">' 
+            html += '<a href="#" class="flex-grow-1 mr-1 ml-1 small" onclick="quickRemoveFavoriteOrganizer(\'' + safe(data.organizer) + '\')">' 
             html += generateFavoriteSVG(true)
           } else {
-            html += '<a href="#" class="flex-grow-1 mr-1 ml-1 small" onclick="quickAddFavoriteOrganizer(\'' + data.organizer + '\')">' 
+            html += '<a href="#" class="flex-grow-1 mr-1 ml-1 small" onclick="quickAddFavoriteOrganizer(\'' + safe(data.organizer) + '\')">' 
             html += generateFavoriteSVG(false)
           }
           html += '</a>'
-          html += '<small class="">' + data.date + '</small>'
+          html += '<small>' + safe(data.date) + '</small>'
         html += '</div>'
-        html += '<h6 class="d-flex align-items-end flex-column mb-1 mt-1 mr-1"><a href="#cid=' + data.id + '" onclick="showCompetitionResults(' + data.id + ', \'' + data.name + '\')" class="text-warning">' + data.name + '</a></h6>'
+        html += '<h6 class="d-flex align-items-end flex-column mb-1 mt-1 mr-1"><a href="#cid=' + safe(data.id) + '" onclick="showCompetitionResults(' + safe(data.id) + ', \'' + safe(data.name) + '\')" class="text-warning">' + safe(data.name) + '</a></h6>'
         html += '</td>'
-      html += '</tr>'
+      html += '</tr></table>'
     });
 
+    //document.getElementById("competitions").innerHTML = html //dp.sanitize(html);
+
+//    debug("dp: ")
+//    debug(html)
+//    debug(dp.sanitize(html, dp_config))
+//    debug(dp.sanitize(html))
     document.getElementById("competitions").innerHTML = html;
   } else {
     document.getElementById("competitions").innerHTML = "<li class='list-group-item'>Inga tävlingar att visa</li>"  ;
@@ -263,11 +286,11 @@ getLastPassings = (competitionId) => {
       let html = ""
       passings.forEach(data => {
         html += '<li class="list-group-item bg-light p-2">'
-          html += '<small class="mr-2">' + data.passtime + '</small>'
-          html += '<small class="mr-2 font-weight-bold">' + data.runnerName + '</small>'
-          html += '<small class="mr-2">(' + data.class + ')</small>'
+          html += '<small class="mr-2">' + safe(data.passtime) + '</small>'
+          html += '<small class="mr-2 font-weight-bold">' + safe(data.runnerName) + '</small>'
+          html += '<small class="mr-2">(' + safe(data.class) + ')</small>'
           //html += '<small class="mr-2">(' + data.controlName + ', ' + data.control + ')</small>'
-          html += '<small class="mr-auto">' + generateResultTimeStatus(data.time) + '</small>'
+          html += '<small class="mr-auto">' + safe(generateResultTimeStatus(data.time)) + '</small>'
         html += '</li>'
       });
       document.getElementById("passings").innerHTML = html;
@@ -307,7 +330,7 @@ getClasses = (competitionId) => {
 
       let html = ""
       classes.forEach((data, idx) => {
-        html += '<button type="button" class="btn btn-secondary mr-2 mb-2 mt-0 ml-0 pl-2 pr-2 pt-0 pb-0" onclick="getClassResult(' + competitionId + ',\'' + data.className + '\')">' + data.className + '</button>'
+        html += '<button type="button" class="btn btn-secondary mr-2 mb-2 mt-0 ml-0 pl-2 pr-2 pt-0 pb-0" onclick="getClassResult(' + safe(competitionId) + ',\'' + safe(data.className) + '\')">' + safe(data.className) + '</button>'
       });
 
       document.getElementById("classes").innerHTML = html
@@ -377,17 +400,17 @@ getClassResult = (competitionId, className) => {
         // {"place":"3","name":"Leif Orienterare","club":"Sjövalla FK","result":"38:11","status":0,"timeplus":"+05:41","progress":100,"start":3716900}
         html += '<tr>'
           if(isBookmarked(data.name, dirtySettings)) {
-            html += '<td class="text-center" scope="row">' + data.place + '</td>'
-            html += '<td class="">' + data.name + '<a href="#" title="Avmarkera" class="pl-1 link" onclick="toggleBookmark(\'' + data.name + '\', this);return false;">' + bookmarkedSVG + '</a>'
+            html += '<td class="text-center" scope="row">' + safe(data.place) + '</td>'
+            html += '<td class="">' + safe(data.name) + '<a href="#" title="Avmarkera" class="pl-1 link" onclick="toggleBookmark(\'' + safe(data.name) + '\', this);return false;">' + safe(generateFavoriteSVG(true)) + '</a>'
           } else {
             html += '<td class="text-center" scope="row">' + data.place + '</td>'
-            html += '<td class="">' + data.name + '<a href="#" title="Bokmärk" class="pl-1 link" onclick="toggleBookmark(\'' + data.name + '\', this);return false;">' + bookmarkSVG + '</a>'
+            html += '<td class="">' + safe(data.name) + '<a href="#" title="Bokmärk" class="pl-1 link" onclick="toggleBookmark(\'' + safe(data.name) + '\', this);return false;">' + safe(generateFavoriteSVG(false)) + '</a>'
           }
-            html += '<br><a href="#" title="Visa klubbresultat" class="small text-warning" onclick="getClubResult(\'' + competitionId + '\',\'' + data.club + '\')">' + data.club + '</a></td>'
+          html += '<br><a href="#" title="Visa klubbresultat" class="small text-warning" onclick="getClubResult(\'' + competitionId + '\',\'' + safe(data.club) + '\')">' + safe(data.club) + '</a></td>'
           html += '<td class="small text-center"">' + moment(data.start * 10).subtract(1,'hour').format("hh:mm:ss") + '</td>' // Summertime. What happens in wintertime??
-          html += '<td class="small text-center"">' + data.result + '</td>'
-          html += '<td class="small text-center"">' + data.timeplus + '</td>'
-        html += '</tr><!-- ' + data.status + ', ' + data.progress + ' -->'
+          html += '<td class="small text-center"">' + safe(data.result) + '</td>'
+          html += '<td class="small text-center"">' + safe(data.timeplus) + '</td>'
+        html += '</tr><!-- ' + safe(data.status) + ', ' + safe(data.progress) + ' -->'
       });
 
       document.getElementById("resultRows").innerHTML = html
@@ -400,7 +423,7 @@ getClassResult = (competitionId, className) => {
 
 // api.php?comp=10259&method=getcclubresults&unformattedTimes=true&club=Klyftamo
 getClubResult = (competitionId, clubName) => {
-  $("#resultLabel")[0].innerHTML = "Resultat - " + clubName
+  $("#resultLabel")[0].innerHTML = "Resultat - " + safe(clubName)
   debug("get clubresult: " + competitionId + ", " + clubName)
   let hashKey = "clubName"+competitionId+clubName
   activateClassButtons(clubName)
@@ -435,18 +458,18 @@ getClubResult = (competitionId, clubName) => {
       clubResult.forEach((data, idx) => {
         html += '<tr>'
           if(isBookmarked(data.name, dirtySettings)) {
-            html += '<td class="text-center" scope="row">' + data.place + '<br></td>'
-            html += '<td class="">' + data.name + '<a href="#" title="Avmarkera" class="pl-1 link" onclick="toggleBookmark(\'' + data.name + '\', this);return false;">' + bookmarkedSVG + '</a><br>'
+            html += '<td class="text-center" scope="row">' + safe(data.place) + '<br></td>'
+            html += '<td class="">' + safe(data.name) + '<a href="#" title="Avmarkera" class="pl-1 link" onclick="toggleBookmark(\'' + safe(data.name) + '\', this);return false;">' + generateFavoriteSVG(true) + '</a><br>'
           } else {
-            html += '<td class="text-center" scope="row">' + data.place + '<br></td>'
-            html += '<td class="">' + data.name + '<a href="#" title="Bokmärk" class="pl-1 link" onclick="toggleBookmark(\'' + data.name + '\', this);return false;">' + bookmarkSVG + '</a><br>'
+            html += '<td class="text-center" scope="row">' + safe(data.place) + '<br></td>'
+            html += '<td class="">' + safe(data.name) + '<a href="#" title="Bokmärk" class="pl-1 link" onclick="toggleBookmark(\'' + safe(data.name) + '\', this);return false;">' + generateFavoriteSVG(false) + '</a><br>'
           }
           //html += '<td class="">' + data.name + '<span class="pl-1 link" onclick="toggleBookmark(\'' + data.name + '\', this);return false;">' + bookmarkSVG + '</span><br>'
-          html += '<a href="#" title="Visa klassresultat" class="small text-warning" onclick="getClassResult(' + competitionId + ', \'' + data.class + '\')">' + data.class + '</a></td>'
+          html += '<a href="#" title="Visa klassresultat" class="small text-warning" onclick="getClassResult(' + competitionId + ', \'' + safe(data.class) + '\')">' + safe(data.class) + '</a></td>'
           html += '<td class="small text-center"">' + moment(data.start * 10).subtract(1,'hour').format("hh:mm:ss") + '</td>' // Summertime. What happens in wintertime??
-          html += '<td class="small text-center"">' + data.result + '</td>'
-          html += '<td class="small text-center"">' + data.timeplus + '</td>'
-        html += '</tr><!-- ' + data.status + ', ' + data.progress + ' -->'
+          html += '<td class="small text-center"">' + safe(data.result) + '</td>'
+          html += '<td class="small text-center"">' + safe(data.timeplus) + '</td>'
+        html += '</tr><!-- ' + safe(data.status) + ', ' + safe(data.progress) + ' -->'
       });
 
       document.getElementById("resultRows").innerHTML = html
@@ -492,7 +515,7 @@ generateSettingsList = () => {
     html += '</ul>'
     html += '<small class="p-2">Version: ' + settings.version + '</small>'
 
-    document.getElementById("settings").innerHTML = html;
+    document.getElementById("settings").innerHTML = dp.sanitize(html);
 }
 
 isBookmarked = (name, cachedSettings) => {
@@ -504,11 +527,11 @@ toggleBookmark = (name, el) => {
   if(isBookmarked(name, settings)) {
     settings.bookmarks = settings.bookmarks.filter(n => n !== name)
     saveSettings(settings)
-    el.innerHTML = bookmarkSVG
+    el.innerHTML = dp.sanitize(generateFavoriteSVG(false))
   } else {
     settings.bookmarks.push(name)
     saveSettings(settings)
-    el.innerHTML = bookmarkedSVG
+    el.innerHTML = dp.sanitize(generateFavoriteSVG(true))
   }
 }
 
@@ -562,14 +585,20 @@ showCompetitionScreen = () => {
   $('#resultsLabel').addClass('disabled')
   $('#competitionsContainer').removeClass('d-none')
   $('#resultsContainer').addClass('d-none')
-  document.getElementById("resultRows").innerHTML = ""
+  document.getElementById("resultRows").innerHTML = '<tr><td colpsan="5">Välj klass</td></tr>'
 }
 showResultScreen = (name) => {
   $('#competitonsLabel').removeClass('active')
   $('#resultsLabel').addClass('active text-white')
   $('#competitionsContainer').addClass('d-none')
   $('#resultsContainer').removeClass('d-none')
-  document.getElementById("competitionName").innerHTML = name
+  /*let settings = loadSettings()
+  if(settings.onlyPersonFavorites) {
+    $('#onlyPersonFavorites')[0].checked = true
+  } else {
+    $('#onlyPersonFavorites')[0].checked = false
+  }*/
+  document.getElementById("competitionName").innerHTML = safe(name)
 }
 
 showCompetitionResults = (competitionId, competitionName) => {
@@ -587,8 +616,8 @@ $( document ).ready(function() {
   // Get recent competitions
   //$('#onlyOrganizerFavorites')[0].checked
   let settings = loadSettings()
-  if(settings.onlyFavorites) {
-    $('#onlyOrganizerFavorites')[0].checked
+  if(settings.onlyClubFavorites) {
+    $('#onlyOrganizerFavorites')[0].checked = true
   }
   getCompetitions()
 
@@ -608,5 +637,11 @@ $( document ).ready(function() {
     }
     getCompetitions()
   })
+  /*$('#onlyPersonFavorites').change(function (e) {
+    if(!$('#onlyPersonFavorites')[0].checked) {
+      debug("person favorites")
+    }
+    //getCompetitions()
+  })*/
 });
 

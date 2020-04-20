@@ -86,7 +86,6 @@
 				<option>31 dagar</option>
 			</select>-->
 			<div class="custom-control custom-switch m-2 d-flex justify-content-end">
-
 				<input type="checkbox" class="custom-control-input" id="onlyOrganizerFavorites">
 				<label class="custom-control-label" for="onlyOrganizerFavorites">Endast favoriter</label>
 			</div>
@@ -137,6 +136,10 @@
 			<!-- Classes -->
 
 			<!-- Results -->
+			<!--<div class="custom-control custom-switch mr-2 ml-0 mt-0 mb-0 d-flex justify-content-end">
+				<input type="checkbox" class="custom-control-input" id="onlyPersonFavorites">
+				<label class="custom-control-label" for="onlyPersonFavorites">Endast favoriter</label>
+			</div>-->
 			<strong class="mb-1" id="resultLabel">Resultat</strong>
 			<div id="results">
 				<table class="table table-sm table-striped table-dark">
@@ -150,6 +153,7 @@
 					</tr>
 				</thead>
 				<tbody id="resultRows">
+				<tr><td colspan="5" class="text-white">Välj klass...</td></tr>
 				</tbody>
 				</table>
 			</div>
@@ -160,6 +164,7 @@
 			<small class="d-flex justify-content-end text-muted">Live OL Results - <a class="pl-1" href="https://github.com/callebokedal/live-ol">github.com/callebokedal/live-ol</a></small>
 		</footer>
 		<script src="lib/js/moment.js"></script>
+		<script src="lib/js/purify.min.js"></script>
 		<!-- <script src="lib/js/purify.min.js"></script> -->
 		<script src="lib/js/jquery-3.5.0.min.js"></script>
 		<script src="lib/js/popper.js"></script>
