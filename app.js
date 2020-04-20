@@ -509,7 +509,7 @@ generateSettingsList = () => {
     }
 
     html += '<li class="list-group-item bg-light">'
-    html += '<button class="btn btn-danger" onclick="resetDefaultSettings()">Återställ alla inställningar</button>'
+    html += '<button class="btn btn-danger" onclick="resetDefaultSettings();return false;">Återställ alla inställningar</button>'
     html += '</li>'
 
     html += '</ul>'
