@@ -1,14 +1,15 @@
 // Init moment
 moment().format()
 
-const version = "1.0";
+const version = "1.1";
 
 // Default settings 
 const defaultSettings = {
   "version": version, 
   "competitionDayLimit": 7, 
   "competitionCacheTTL": 120, 
-  "favoriteOrganizors": ["Sjövalla FK", "Lerums SOK"] 
+  "favoriteOrganizors": ["Sjövalla FK", "Lerums SOK"],
+  "bookmarks": []
 }
 
 const hashCache = new Map();
@@ -168,6 +169,8 @@ const overTimeSVG = '<svg class="bi bi-clock-history text-danger" width="1em" he
 const olSVG = '<svg class="bi bi-diamond-half" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M6.95.435c.58-.58 1.52-.58 2.1 0l6.515 6.516c.58.58.58 1.519 0 2.098L9.05 15.565c-.58.58-1.519.58-2.098 0L.435 9.05a1.482 1.482 0 010-2.098L6.95.435zM8 .989a.493.493 0 00-.35.145L1.134 7.65a.495.495 0 000 .7l6.516 6.516a.493.493 0 00.35.145V.989z" clip-rule="evenodd" transform="rotate(45 10 10)"/></svg>'
 const logoSVG = '<svg class="bi bi-diamond-half" width="2em" height="2em" viewBox="0 0 16 16" fill="orange" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M6.95.435c.58-.58 1.52-.58 2.1 0l6.515 6.516c.58.58.58 1.519 0 2.098L9.05 15.565c-.58.58-1.519.58-2.098 0L.435 9.05a1.482 1.482 0 010-2.098L6.95.435zM8 .989a.493.493 0 00-.35.145L1.134 7.65a.495.495 0 000 .7l6.516 6.516a.493.493 0 00.35.145V.989z" clip-rule="evenodd" transform="rotate(45 10 10)"/></svg>'
  //transform="rotate(45 10 10) translate(0 0)"
+const bookmarkSVG = '<svg class="bi bi-bookmark text-secondary" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M8 12l5 3V3a2 2 0 00-2-2H5a2 2 0 00-2 2v12l5-3zm-4 1.234l4-2.4 4 2.4V3a1 1 0 00-1-1H5a1 1 0 00-1 1v10.234z" clip-rule="evenodd"/></svg>'
+const bookmarkedSVG = '<svg class="bi bi-bookmark-fill text-warning" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3 3a2 2 0 012-2h6a2 2 0 012 2v12l-5-3-5 3V3z" clip-rule="evenodd"/></svg>'
 generateResultTimeStatus = (status) => {
   if(status == "ej start") {
     return didNotStartSVG + '<small class="pl-1">Ej start</small>'
@@ -370,6 +373,7 @@ getClassResult = (competitionId, className) => {
       debug(classResult)
 
       let html = ""
+      let dirtySettings = loadSettings()
       classResult.forEach((data, idx) => {
         //html += '<button type="button" class="btn btn-sm btn-secondary mr-1 mb-1 mt-0 ml-0 pl-1 pr-1 pt-0 pb-0" onclick="getClassResult(' + competitionId + ',\'' + data.className + '\')">' + data.className + '</button>'
         //html += JSON.stringify(data)
@@ -386,7 +390,12 @@ getClassResult = (competitionId, className) => {
 
         // {"place":"3","name":"Leif Orienterare","club":"Sjövalla FK","result":"38:11","status":0,"timeplus":"+05:41","progress":100,"start":3716900}
         html += '<tr>'
-          html += '<th class="text-center" scope="row">' + data.place + '<br>' + generateFavoriteSVG(false) + '</th>'
+          if(isBookmarked(data.name, dirtySettings)) {
+            html += '<td class="text-center" scope="row">' + data.place + '<br><a href="#" onclick="toggleBookmark(\'' + data.name + '\', this)">' + bookmarkedSVG + '</a></td>'
+          } else {
+            html += '<td class="text-center" scope="row">' + data.place + '<br><a href="#" onclick="toggleBookmark(\'' + data.name + '\', this)">' + bookmarkSVG + '</a></td>'
+          }
+          //html += '<th class="text-center" scope="row">' + data.place + '<br>' + generateFavoriteSVG(false) + '</th>'
           html += '<td class="">' + data.name + '<br><a href="#" title="Visa klubbresultat" class="small text-warning" onclick="getClubResult(\'' + competitionId + '\',\'' + data.club + '\')">' + data.club + '</a></td>'
           html += '<td class="small text-center"">' + moment(data.start * 10).subtract(1,'hour').format("hh:mm:ss") + '</td>' // Summertime. What happens in wintertime??
           html += '<td class="small text-center"">' + data.result + '</td>'
@@ -442,9 +451,15 @@ getClubResult = (competitionId, clubName) => {
       debug(clubResult)
 
       let html = ""
+      let dirtySettings = loadSettings()
+      //debug("dirty: " + JSON.stringify(dirtySettings))
       clubResult.forEach((data, idx) => {
         html += '<tr>'
-          html += '<th class="text-center" scope="row">' + data.place + '<br>' + generateFavoriteSVG(true) + '</th>'
+          if(isBookmarked(data.name, dirtySettings)) {
+            html += '<td class="text-center" scope="row">' + data.place + '<br><a href="#" onclick="toggleBookmark(\'' + data.name + '\', this)">' + bookmarkedSVG + '</a></td>'
+          } else {
+            html += '<td class="text-center" scope="row">' + data.place + '<br><a href="#" onclick="toggleBookmark(\'' + data.name + '\', this)">' + bookmarkSVG + '</a></td>'
+          }
           html += '<td class="">' + data.name + '<br><a href="#" title="Visa klassresultat" class="small text-warning" onclick="getClassResult(' + competitionId + ', \'' + data.class + '\')">' + data.class + '</a></td>'
           html += '<td class="small text-center"">' + moment(data.start * 10).subtract(1,'hour').format("hh:mm:ss") + '</td>' // Summertime. What happens in wintertime??
           html += '<td class="small text-center"">' + data.result + '</td>'
@@ -459,10 +474,6 @@ getClubResult = (competitionId, clubName) => {
     }
   });
 
-}
-
-filterClasses = (id) => {
-  debug("filter classes - " + id) 
 }
 
 generateSettingsList = () => {
@@ -494,6 +505,23 @@ generateSettingsList = () => {
     html += '<small class="p-2">Version: ' + settings.version + '</small>'
 
     document.getElementById("settings").innerHTML = html;
+}
+
+isBookmarked = (name, cachedSettings) => {
+  let settings = cachedSettings || loadSettings()
+  return settings && settings.bookmarks && settings.bookmarks.includes(name)
+} 
+toggleBookmark = (name, el) => {
+  let settings = loadSettings()
+  if(isBookmarked(name, settings)) {
+    settings.bookmarks = settings.bookmarks.filter(n => n !== name)
+    saveSettings(settings)
+    el.innerHTML = bookmarkSVG
+  } else {
+    settings.bookmarks.push(name)
+    saveSettings(settings)
+    el.innerHTML = bookmarkedSVG
+  }
 }
 
 quickAddFavoriteOrganizer = (organizerName) => {
