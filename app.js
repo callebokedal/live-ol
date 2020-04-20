@@ -387,7 +387,7 @@ getClassResult = (competitionId, className) => {
         // {"place":"3","name":"Leif Orienterare","club":"Sjövalla FK","result":"38:11","status":0,"timeplus":"+05:41","progress":100,"start":3716900}
         html += '<tr>'
           html += '<th class="text-center" scope="row">' + data.place + '<br>' + generateFavoriteSVG(false) + '</th>'
-          html += '<td class="">' + data.name + '<br><a href="#" class="text-warning" onclick="getClubResult(\'' + competitionId + '\',\'' + data.club + '\')">' + data.club + '</a></td>'
+          html += '<td class="">' + data.name + '<br><a href="#" title="Visa klubbresultat" class="small text-warning" onclick="getClubResult(\'' + competitionId + '\',\'' + data.club + '\')">' + data.club + '</a></td>'
           html += '<td class="small text-center"">' + moment(data.start * 10).subtract(1,'hour').format("hh:mm:ss") + '</td>' // Summertime. What happens in wintertime??
           html += '<td class="small text-center"">' + data.result + '</td>'
           html += '<td class="small text-center"">' + data.timeplus + '</td>'
@@ -445,7 +445,7 @@ getClubResult = (competitionId, clubName) => {
       clubResult.forEach((data, idx) => {
         html += '<tr>'
           html += '<th class="text-center" scope="row">' + data.place + '<br>' + generateFavoriteSVG(true) + '</th>'
-          html += '<td class="">' + data.name + '<br><a href="#" class="text-warning" onclick="getClassResult(' + competitionId + ', \'' + data.class + '\')">' + data.class + '</a></td>'
+          html += '<td class="">' + data.name + '<br><a href="#" title="Visa klassresultat" class="small text-warning" onclick="getClassResult(' + competitionId + ', \'' + data.class + '\')">' + data.class + '</a></td>'
           html += '<td class="small text-center"">' + moment(data.start * 10).subtract(1,'hour').format("hh:mm:ss") + '</td>' // Summertime. What happens in wintertime??
           html += '<td class="small text-center"">' + data.result + '</td>'
           html += '<td class="small text-center"">' + data.timeplus + '</td>'
@@ -547,6 +547,7 @@ showCompetitionScreen = () => {
   $('#resultsLabel').addClass('disabled')
   $('#competitionsContainer').removeClass('d-none')
   $('#resultsContainer').addClass('d-none')
+  document.getElementById("resultRows").innerHTML = ""
 }
 showResultScreen = (name) => {
   $('#competitonsLabel').removeClass('active')
