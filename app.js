@@ -8,6 +8,7 @@ const defaultSettings = {
   "version": version, 
   "competitionDayLimit": 7, 
   "competitionCacheTTL": 120, 
+  "onlyFavorites": false,
   "favoriteOrganizors": ["Sjövalla FK", "Lerums SOK"],
   "bookmarks": []
 }
@@ -221,7 +222,6 @@ generateCompetitionsList = (data) => {
 }
 
 // api.php?method=getclasses&comp=XXXX&last_hash=abcdefg
-//let lastPassingsHash = ""
 getLastPassings = (competitionId) => {
   debug("get results")
   let hashKey = "pass"+competitionId
@@ -278,7 +278,6 @@ getLastPassings = (competitionId) => {
 }
 
 // api.php?method=getclasses&comp=XXXX&last_hash=abcdefg
-//let lastClassesHash = ""
 getClasses = (competitionId) => {
   debug("get classes: " + competitionId)
   let hashKey = "classes"+competitionId
@@ -308,18 +307,10 @@ getClasses = (competitionId) => {
 
       let html = ""
       classes.forEach((data, idx) => {
-        //html += '<button type="button" class="btn btn-secondary mr-1 mb-1 mt-0 ml-0 pl-1 pr-1 pt-0 pb-0" onclick="getClassResult(' + competitionId + ',\'' + data.className + '\')">' + data.className + '</button>'
         html += '<button type="button" class="btn btn-secondary mr-2 mb-2 mt-0 ml-0 pl-2 pr-2 pt-0 pb-0" onclick="getClassResult(' + competitionId + ',\'' + data.className + '\')">' + data.className + '</button>'
       });
-      //classes.forEach((data, idx) => {
-      //  html += '<a class="dropdown-item" href="#">' + data.className + '</a>'
-      //});
 
       document.getElementById("classes").innerHTML = html
-      //data-toggle="dropdown"
-      //$('#dropdownClassesButton').dropdown()
-      //$('.dropdown-classes').dropdown('update')
-      //$('.dropdown-classes').dropdown()
     } else {
       debug("what?")
     }
@@ -341,15 +332,10 @@ activateClassButtons = (className) => {
 }
 
 // api.php?comp=10259&method=getclassresults&unformattedTimes=true&class=Öppen-1
-//let lastClassResultHash = ""
 getClassResult = (competitionId, className) => {
   $("#resultLabel")[0].innerHTML = "Resultat - " + className
   debug("get classresult: " + competitionId + ", " + className)
   let hashKey = "className"+competitionId+className
-  //debug(e)
-  //$(e).toggleClass("active")
-  //$(e).toggleClass("btn-primary")
-  //$(e).toggleClass("btn-secondary")
   activateClassButtons(className)
 
   // Fetch new data
@@ -391,20 +377,18 @@ getClassResult = (competitionId, className) => {
         // {"place":"3","name":"Leif Orienterare","club":"Sjövalla FK","result":"38:11","status":0,"timeplus":"+05:41","progress":100,"start":3716900}
         html += '<tr>'
           if(isBookmarked(data.name, dirtySettings)) {
-            html += '<td class="text-center" scope="row">' + data.place + '<br><a href="#" onclick="toggleBookmark(\'' + data.name + '\', this)">' + bookmarkedSVG + '</a></td>'
+            html += '<td class="text-center" scope="row">' + data.place + '</td>'
+            html += '<td class="">' + data.name + '<span title="Avmarkera" class="pl-1 link" onclick="toggleBookmark(\'' + data.name + '\', this)">' + bookmarkedSVG + '</span>'
           } else {
-            html += '<td class="text-center" scope="row">' + data.place + '<br><a href="#" onclick="toggleBookmark(\'' + data.name + '\', this)">' + bookmarkSVG + '</a></td>'
+            html += '<td class="text-center" scope="row">' + data.place + '</td>'
+            html += '<td class="">' + data.name + '<span title="Bokmärk" class="pl-1 link" onclick="toggleBookmark(\'' + data.name + '\', this)">' + bookmarkSVG + '</span>'
           }
-          //html += '<th class="text-center" scope="row">' + data.place + '<br>' + generateFavoriteSVG(false) + '</th>'
-          html += '<td class="">' + data.name + '<br><a href="#" title="Visa klubbresultat" class="small text-warning" onclick="getClubResult(\'' + competitionId + '\',\'' + data.club + '\')">' + data.club + '</a></td>'
+            html += '<br><a href="#" title="Visa klubbresultat" class="small text-warning" onclick="getClubResult(\'' + competitionId + '\',\'' + data.club + '\')">' + data.club + '</a></td>'
           html += '<td class="small text-center"">' + moment(data.start * 10).subtract(1,'hour').format("hh:mm:ss") + '</td>' // Summertime. What happens in wintertime??
           html += '<td class="small text-center"">' + data.result + '</td>'
           html += '<td class="small text-center"">' + data.timeplus + '</td>'
         html += '</tr><!-- ' + data.status + ', ' + data.progress + ' -->'
       });
-      //classes.forEach((data, idx) => {
-      //  html += '<a class="dropdown-item" href="#">' + data.className + '</a>'
-      //});
 
       document.getElementById("resultRows").innerHTML = html
     } else {
@@ -415,15 +399,10 @@ getClassResult = (competitionId, className) => {
 }
 
 // api.php?comp=10259&method=getcclubresults&unformattedTimes=true&club=Klyftamo
-//let lastClubResultHash = ""
 getClubResult = (competitionId, clubName) => {
   $("#resultLabel")[0].innerHTML = "Resultat - " + clubName
   debug("get clubresult: " + competitionId + ", " + clubName)
   let hashKey = "clubName"+competitionId+clubName
-  //debug(e)
-  //$(e).toggleClass("active")
-  //$(e).toggleClass("btn-primary")
-  //$(e).toggleClass("btn-secondary")
   activateClassButtons(clubName)
 
   // Fetch new data
@@ -456,24 +435,29 @@ getClubResult = (competitionId, clubName) => {
       clubResult.forEach((data, idx) => {
         html += '<tr>'
           if(isBookmarked(data.name, dirtySettings)) {
-            html += '<td class="text-center" scope="row">' + data.place + '<br><a href="#" onclick="toggleBookmark(\'' + data.name + '\', this)">' + bookmarkedSVG + '</a></td>'
+            html += '<td class="text-center" scope="row">' + data.place + '<br></td>'
+            html += '<td class="">' + data.name + '<span title="Avmarkera" class="pl-1 link" onclick="toggleBookmark(\'' + data.name + '\', this)">' + bookmarkedSVG + '</span><br>'
           } else {
-            html += '<td class="text-center" scope="row">' + data.place + '<br><a href="#" onclick="toggleBookmark(\'' + data.name + '\', this)">' + bookmarkSVG + '</a></td>'
+            html += '<td class="text-center" scope="row">' + data.place + '<br></td>'
+            html += '<td class="">' + data.name + '<span title="Bokmärk" class="pl-1 link" onclick="toggleBookmark(\'' + data.name + '\', this)">' + bookmarkSVG + '</span><br>'
           }
-          html += '<td class="">' + data.name + '<br><a href="#" title="Visa klassresultat" class="small text-warning" onclick="getClassResult(' + competitionId + ', \'' + data.class + '\')">' + data.class + '</a></td>'
+          //html += '<td class="">' + data.name + '<span class="pl-1 link" onclick="toggleBookmark(\'' + data.name + '\', this)">' + bookmarkSVG + '</span><br>'
+          html += '<a href="#" title="Visa klassresultat" class="small text-warning" onclick="getClassResult(' + competitionId + ', \'' + data.class + '\')">' + data.class + '</a></td>'
           html += '<td class="small text-center"">' + moment(data.start * 10).subtract(1,'hour').format("hh:mm:ss") + '</td>' // Summertime. What happens in wintertime??
           html += '<td class="small text-center"">' + data.result + '</td>'
           html += '<td class="small text-center"">' + data.timeplus + '</td>'
         html += '</tr><!-- ' + data.status + ', ' + data.progress + ' -->'
       });
-      //classes.forEach((data, idx) => {
-      //  html += '<a class="dropdown-item" href="#">' + data.className + '</a>'
-      //});
 
       document.getElementById("resultRows").innerHTML = html
     }
   });
 
+}
+
+resetDefaultSettings = () => {
+  saveSettings(defaultSettings)
+  generateSettingsList()
 }
 
 generateSettingsList = () => {
@@ -500,6 +484,10 @@ generateSettingsList = () => {
         html += '</li>'
       }); 
     }
+
+    html += '<li class="list-group-item bg-light">'
+    html += '<button class="btn btn-danger" onclick="resetDefaultSettings()">Återställ alla inställningar</button>'
+    html += '</li>'
 
     html += '</ul>'
     html += '<small class="p-2">Version: ' + settings.version + '</small>'
@@ -552,7 +540,6 @@ removeFavoriteOrganizer = (organizerName) => {
   saveSettings(settings)
 }
 
-//loadSettings = (defaultSettings) => {
 loadSettings = () => {
   //debug("loadSettings - defaultSettings: " + JSON.stringify(defaultSettings));
   let settings = localStorage.getItem("settings") ? JSON.parse(localStorage.getItem("settings")) : defaultSettings;
@@ -594,25 +581,28 @@ showCompetitionResults = (competitionId, competitionName) => {
 // EVENT LISTENERS 
 $( document ).ready(function() {
   debug( "ready!" );
-  // Classes dropdown
-  //$('.dropdown-toggle').dropdown()
 
   //$("#logo").replaceWith(logoSVG)
 
   // Get recent competitions
+  //$('#onlyOrganizerFavorites')[0].checked
+  let settings = loadSettings()
+  if(settings.onlyFavorites) {
+    $('#onlyOrganizerFavorites')[0].checked
+  }
   getCompetitions()
 
   $('#settingsBackdrop').on('show.bs.modal', function (e) {
-    debug("Settings show")
+    //debug("Settings show")
     generateSettingsList()
   })
   $('#settingsBackdrop').on('hide.bs.modal', function (e) {
-    debug("Settings dismissed")
+    //debug("Settings dismissed")
     getCompetitions()
   })
 
   $('#onlyOrganizerFavorites').change(function (e) {
-    debug("onlyOrganizerFavorites: " + $('#onlyOrganizerFavorites')[0].checked)
+    //debug("onlyOrganizerFavorites: " + $('#onlyOrganizerFavorites')[0].checked)
     if(!$('#onlyOrganizerFavorites')[0].checked) {
       removeCompetitionsListCache()
     }
