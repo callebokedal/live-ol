@@ -37,7 +37,7 @@
 					<a class="nav-link text-white active" id="competitonsLabel" href="#" onclick="showCompetitionScreen()">Tävlingar</a>
 				</li>
 				<li class="nav-item">
-					<a class="nav-link text-white" id="resultsLabel" href="#" onclick="showResultScreen()">Resultat</a>
+					<a class="nav-link disabled" id="resultsLabel" href="#" onclick="showResultScreen()">Resultat</a>
 				</li>
 				<!--<li class="nav-item dropdown pl-1">
 					<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Klasser</a>
@@ -76,18 +76,37 @@
 		<div class="container p-1" id="competitionsContainer">
 
 			<!-- Competitions -->
+			<!--<select class="form-control mr-5" id="dayLimit">
+				<option>7 dagar</option>
+				<option>14 dagar</option>
+				<option>31 dagar</option>
+			</select>-->
 			<div class="custom-control custom-switch m-2 d-flex justify-content-end">
+
 				<input type="checkbox" class="custom-control-input" id="onlyOrganizerFavorites">
 				<label class="custom-control-label" for="onlyOrganizerFavorites">Endast favoriter</label>
 			</div>
-			<ul class="list-group" id="competitions">				
+			<!--<ul class="list-group" id="competitions">				
 				<div class="alert alert-primary m-3 d-flex justify-content-start flex-row align-items-center" role="alert">
 					<div class="spinner-border text-success" role="status">
 						<span class="sr-only">Laddar...</span>
 					</div>
 					<span class="d-flex ml-3">Laddar tävlingar...</span>
 				</div>
-			</ul>
+			</ul>-->
+			<table class="table table-sm table-striped table-dark">
+			<!--<thead>
+				<tr>
+					<th scope="col" class="text-center">#</th>
+					<th scope="col">Namn</th>
+					<th scope="col" class="text-center">Start</th>
+					<th scope="col" class="text-center">Tid</th>
+					<th scope="col" class="text-center">Diff</th>
+				</tr>
+			</thead>-->
+			<tbody id="competitions">
+			</tbody>
+			</table>
 			<!-- Competitions end -->
 
 		</div>
@@ -97,8 +116,8 @@
 			<h6 id="competitionName" class="d-flex flex-row-reverse p-1"></h6>
 
 			<!-- Last passings -->
-			<small class="font-weight-bold">Senaste passeringar</small>
-			<ul class="list-group" id="passings">
+			<strong class="mb-1">Senaste passeringar</strong>
+			<ul class="list-group mb-2" id="passings">
 				<div class="alert alert-primary m-3 d-flex justify-content-start flex-row align-items-center" role="alert">
 					<div class="spinner-border text-success" role="status">
 						<span class="sr-only">Laddar...</span>
@@ -109,12 +128,12 @@
 			<!-- Last passings end -->
 
 			<!-- Classes -->
-			<small class="font-weight-bold">Klasser</small>
+			<strong class="mb-1">Klasser</strong>
 			<div id="classes"></div>
 			<!-- Classes -->
 
 			<!-- Results -->
-			<small class="font-weight-bold"id="resultLabel">Resultat</small>
+			<strong class="mb-1" id="resultLabel">Resultat</strong>
 			<div id="results">
 				<table class="table table-sm table-striped table-dark">
 				<thead>

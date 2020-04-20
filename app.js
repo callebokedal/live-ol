@@ -192,25 +192,23 @@ generateCompetitionsList = (data) => {
         badgeClass = "badge badge-dark"
       }
 
-      html += '<li class="list-group-item bg-light p-2">'
-        html += '<div class="d-flex mb-1">'
-          html += '<small class="' + badgeClass + ' mr-auto">' + data.date + '</small>'
-          
-          // Favorite
-          html += '<small class="mr-2">' + data.organizer + '</small>'
+      html += '<tr>'
+        html += '<td class="" scope="row">'
+        html += '<div class="mb-1 d-flex">'
+          html += '<small class=" align-middle">' + data.organizer + '</small>'
           if(settings.favoriteOrganizors.indexOf(data.organizer) !== -1) {
-            html += '<a href="#" class="d-inline-flex" onclick="quickRemoveFavoriteOrganizer(\'' + data.organizer + '\')">' 
+            html += '<a href="#" class="flex-grow-1 mr-1 ml-1 small" onclick="quickRemoveFavoriteOrganizer(\'' + data.organizer + '\')">' 
             html += generateFavoriteSVG(true)
           } else {
-            html += '<a href="#" class="d-inline-flex" onclick="quickAddFavoriteOrganizer(\'' + data.organizer + '\')">' 
+            html += '<a href="#" class="flex-grow-1 mr-1 ml-1 small" onclick="quickAddFavoriteOrganizer(\'' + data.organizer + '\')">' 
             html += generateFavoriteSVG(false)
-          } 
+          }
           html += '</a>'
-
+          html += '<small class="">' + data.date + '</small>'
         html += '</div>'
-        html += '<h6 class="d-flex align-items-end flex-column mb-1 mt-1"><a href="#cid=' + data.id + '" onclick="showCompetitionResults(' + data.id + ', \'' + data.name + '\')" class="name">' + data.name + '</a></h6>'
-      html += '</li>'
-
+        html += '<h6 class="d-flex align-items-end flex-column mb-1 mt-1 mr-1"><a href="#cid=' + data.id + '" onclick="showCompetitionResults(' + data.id + ', \'' + data.name + '\')" class="text-warning">' + data.name + '</a></h6>'
+        html += '</td>'
+      html += '</tr>'
     });
 
     document.getElementById("competitions").innerHTML = html;
@@ -388,7 +386,7 @@ getClassResult = (competitionId, className) => {
 
         // {"place":"3","name":"Leif Orienterare","club":"Sjövalla FK","result":"38:11","status":0,"timeplus":"+05:41","progress":100,"start":3716900}
         html += '<tr>'
-          html += '<th class="text-center" scope="row">' + data.place + '</th>'
+          html += '<th class="text-center" scope="row">' + data.place + '<br>' + generateFavoriteSVG(false) + '</th>'
           html += '<td class="">' + data.name + '<br><a href="#" class="text-warning" onclick="getClubResult(\'' + competitionId + '\',\'' + data.club + '\')">' + data.club + '</a></td>'
           html += '<td class="small text-center"">' + moment(data.start * 10).subtract(1,'hour').format("hh:mm:ss") + '</td>' // Summertime. What happens in wintertime??
           html += '<td class="small text-center"">' + data.result + '</td>'
@@ -446,7 +444,7 @@ getClubResult = (competitionId, clubName) => {
       let html = ""
       clubResult.forEach((data, idx) => {
         html += '<tr>'
-          html += '<th class="text-center" scope="row">' + data.place + '</th>'
+          html += '<th class="text-center" scope="row">' + data.place + '<br>' + generateFavoriteSVG(true) + '</th>'
           html += '<td class="">' + data.name + '<br><a href="#" class="text-warning" onclick="getClassResult(' + competitionId + ', \'' + data.class + '\')">' + data.class + '</a></td>'
           html += '<td class="small text-center"">' + moment(data.start * 10).subtract(1,'hour').format("hh:mm:ss") + '</td>' // Summertime. What happens in wintertime??
           html += '<td class="small text-center"">' + data.result + '</td>'
@@ -545,13 +543,14 @@ saveSettings = (settings) => {
 
 showCompetitionScreen = () => {
   $('#competitonsLabel').addClass('active')
-  $('#resultsLabel').removeClass('active')
+  $('#resultsLabel').removeClass('active text-white')
+  $('#resultsLabel').addClass('disabled')
   $('#competitionsContainer').removeClass('d-none')
   $('#resultsContainer').addClass('d-none')
 }
 showResultScreen = (name) => {
   $('#competitonsLabel').removeClass('active')
-  $('#resultsLabel').addClass('active')
+  $('#resultsLabel').addClass('active text-white')
   $('#competitionsContainer').addClass('d-none')
   $('#resultsContainer').removeClass('d-none')
   document.getElementById("competitionName").innerHTML = name
