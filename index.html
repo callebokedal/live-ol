@@ -27,6 +27,9 @@
 			.link {
 				cursor: pointer;
 			}
+			footer {
+				margin-bottom: 100px;
+			}
 		</style>
 
 	</head>
@@ -42,7 +45,8 @@
 					<a class="nav-link text-white active" id="competitonsLabel" href="#" onclick="showCompetitionScreen()">Tävlingar</a>
 				</li>
 				<li class="nav-item">
-					<a class="nav-link disabled" id="resultsLabel" href="#" onclick="showResultScreen()">Resultat</a>
+					<!--<a class="nav-link disabled" id="resultsLabel" href="#" onclick="showResultScreen()">Resultat</a>-->
+					<a class="nav-link disabled" id="resultsLabel" href="#">Resultat</a>
 				</li>
 				<!--<li class="nav-item dropdown pl-1">
 					<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Klasser</a>
@@ -119,7 +123,14 @@
 			<h6 id="competitionName" class="d-flex flex-row-reverse p-1"></h6>
 
 			<!-- Last passings -->
-			<strong class="mb-1">Senaste passeringar</strong>
+
+			<div class="d-flex">
+				<strong class="mb-1 flex-grow-1">Senaste passeringar</strong>
+				<button type="button " class="btn btn-sm btn-light" id="lastPassingTimerToggler"></button>
+			</div>
+			<!--<div class="progress mb-1" style="height: 1px;">
+				<div id="lastPassingTimer" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+			</div>-->
 			<ul class="list-group mb-2" id="passings">
 				<div class="alert alert-primary m-3 d-flex justify-content-start flex-row align-items-center" role="alert">
 					<div class="spinner-border text-success" role="status">
@@ -140,7 +151,13 @@
 				<input type="checkbox" class="custom-control-input" id="onlyPersonFavorites">
 				<label class="custom-control-label" for="onlyPersonFavorites">Endast favoriter</label>
 			</div>-->
-			<strong class="mb-1" id="resultLabel">Resultat</strong>
+			<div class="d-flex">
+				<strong class="mb-1 flex-grow-1" id="resultLabel">Resultat</strong>
+				<button type="button" class="btn btn-sm" id="resultTimerToggler" onclick="togglerResultTimer();return false;"></button>
+			</div>
+			<!--<div class="progress mb-1" style="height: 1px;">
+				<div id="resultTimer" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+			</div>-->
 			<div id="results">
 				<table class="table table-sm table-striped table-dark">
 				<thead>
@@ -153,14 +170,14 @@
 					</tr>
 				</thead>
 				<tbody id="resultRows">
-				<tr><td colspan="5" class="text-white">Välj klass...</td></tr>
+				<tr><td colspan="5" class="text-white small">Ingen klass eller klubb vald</td></tr>
 				</tbody>
 				</table>
 			</div>
 			<!-- Results end -->
 
 		</div>
-		<footer class="container">
+		<footer class="container pb-10">
 			<small class="d-flex justify-content-end text-muted">Live OL Results - <a class="pl-1" href="https://github.com/callebokedal/live-ol">github.com/callebokedal/live-ol</a></small>
 		</footer>
 		<script src="lib/js/moment.js"></script>

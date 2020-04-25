@@ -20,12 +20,14 @@ let safe = DOMPurify.sanitize
 // Default settings 
 const defaultSettings = {
   "version": version, 
-  "competitionDayLimit": 14, 
+  "competitionDayLimit": 31, 
   "competitionCacheTTL": 120, 
   "onlyClubFavorites": false,
   "onlyPersonFavorites": false,
   "favoriteOrganizors": ["Sjövalla FK"],
   "bookmarks": [],
+  "lastPassingTimer": false,
+  "resultTimer": true
 //  "viewState": ScreenState.competitionsAll,
 //  "currentCompetition": null,
 //  "currentClassResult": null,
@@ -35,16 +37,16 @@ const defaultSettings = {
 
 const hashCache = new Map();
 loadHash = (key) => {
-  debug("load: " + key)
+  //debug("load: " + key)
   if(hashCache.has(key)) {
-    debug(hashCache.get(key))
+    //debug(hashCache.get(key))
     return hashCache.get(key)
   } else {
     return ""
   }
 }
 saveHash = (key, value) => {
-  debug("key + value: " + key + "=" + value)
+  //debug("key + value: " + key + "=" + value)
   hashCache.set(key, value)
 }
 
@@ -61,6 +63,50 @@ saveResult = (key, data) => {
   resultCache.set(key,data)
 }
 
+// api.php?method=getcompetitioninfo&comp=xxx
+/*getCompetitionInfo = (compId) => {
+//{ "id" : 10278, 
+//"name" : "Demo #1", 
+//"organizer" : "TestOrganizer", 
+//"date" : "2012-06-01",
+//"timediff" : 0,
+//"multidaystage" : 1,
+//"multidayfirstday" : 10278
+//}
+
+
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", "https://liveresultat.orientering.se/api.php?method=getcompetitioninfo&comp=" + safe(compId));
+    xhr.send(null);
+    let result = "{a}"
+
+    xhr.addEventListener("loadend", function() {
+      var json = JSON.parse(xhr.response);
+      if (xhr.status === 401) {
+        console.log("Can't access competition")
+      } else if (xhr.status === 200) {
+        debug("competition: " + JSON.stringify(json))
+
+        // {"id":17289,"name":"Sjövalla FK Påsk-Cup E4","organizer":"Sjövalla FK","date":"2020-04-13","timediff":0,"timezone":"","isPublic":1}
+
+        //competition = json.competition;
+
+        //let filtered = filterCompetitions(competitions, settings)
+
+        //saveCompetitionsListCache(filtered)
+        //generateCompetitionsList(filtered)
+        result = JSON.stringify(json)
+      } else {
+        console.log("No response!!")
+        //return {}
+      }
+    });
+
+    debug("return " + result)
+    return result
+}*/
+
+// api.php?method=getcompetitions
 getCompetitions = () => {
   debug("getCompetitions");
 
@@ -101,7 +147,7 @@ getCompetitions = () => {
 filterCompetitions = (competitions, settings) => {
   //debug("before filter: " + competitions)
   // Get settings
-  let filterDays = 14;
+  let filterDays = 31;
   if(Number.isInteger(settings.competitionDayLimit)) {
     filterDays = settings.competitionDayLimit
   }
@@ -113,7 +159,7 @@ filterCompetitions = (competitions, settings) => {
   // Filter by day and organizors
   let filtered = competitions.filter( (c,i,ary) => {
     let d = moment().diff(c.date, 'days');
-    let dayInScope = d >= 0 && d <= filterDays && c.timediff == 0;
+    let dayInScope = d >= 0 && d <= filterDays && c.timediff == 0; // timediff==0 "ensure local events, to some extent"
     if($('#onlyOrganizerFavorites')[0].checked) {
       let organizerInScope = favoriteOrganizors.length == 0 || favoriteOrganizors.indexOf(c.organizer) >= 0
       return dayInScope && organizerInScope
@@ -125,7 +171,7 @@ filterCompetitions = (competitions, settings) => {
 }
 
 debug = (str) => {
-  console.log(str)
+  //console.log(str)
 }
 
 saveCompetitionsListCache = (data) => {
@@ -189,6 +235,9 @@ const logoSVG = '<svg class="bi bi-diamond-half" width="2em" height="2em" viewBo
  //transform="rotate(45 10 10) translate(0 0)"
 const bookmarkSVG = '<svg class="bi bi-bookmark text-secondary" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M8 12l5 3V3a2 2 0 00-2-2H5a2 2 0 00-2 2v12l5-3zm-4 1.234l4-2.4 4 2.4V3a1 1 0 00-1-1H5a1 1 0 00-1 1v10.234z" clip-rule="evenodd"/></svg>'
 const bookmarkedSVG = '<svg class="bi bi-bookmark-fill text-warning" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3 3a2 2 0 012-2h6a2 2 0 012 2v12l-5-3-5 3V3z" clip-rule="evenodd"/></svg>'
+const timerOffSVG = '<svg class="bi bi-arrow-repeat" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M2.854 7.146a.5.5 0 00-.708 0l-2 2a.5.5 0 10.708.708L2.5 8.207l1.646 1.647a.5.5 0 00.708-.708l-2-2zm13-1a.5.5 0 00-.708 0L13.5 7.793l-1.646-1.647a.5.5 0 00-.708.708l2 2a.5.5 0 00.708 0l2-2a.5.5 0 000-.708z" clip-rule="evenodd"/><path fill-rule="evenodd" d="M8 3a4.995 4.995 0 00-4.192 2.273.5.5 0 01-.837-.546A6 6 0 0114 8a.5.5 0 01-1.001 0 5 5 0 00-5-5zM2.5 7.5A.5.5 0 013 8a5 5 0 009.192 2.727.5.5 0 11.837.546A6 6 0 012 8a.5.5 0 01.501-.5z" clip-rule="evenodd"/></svg>'
+const timerOnSVG = '<svg class="bi bi-arrow-repeat text-primary" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M2.854 7.146a.5.5 0 00-.708 0l-2 2a.5.5 0 10.708.708L2.5 8.207l1.646 1.647a.5.5 0 00.708-.708l-2-2zm13-1a.5.5 0 00-.708 0L13.5 7.793l-1.646-1.647a.5.5 0 00-.708.708l2 2a.5.5 0 00.708 0l2-2a.5.5 0 000-.708z" clip-rule="evenodd"/><path fill-rule="evenodd" d="M8 3a4.995 4.995 0 00-4.192 2.273.5.5 0 01-.837-.546A6 6 0 0114 8a.5.5 0 01-1.001 0 5 5 0 00-5-5zM2.5 7.5A.5.5 0 013 8a5 5 0 009.192 2.727.5.5 0 11.837.546A6 6 0 012 8a.5.5 0 01.501-.5z" clip-rule="evenodd"/></svg>'
+
 generateResultTimeStatus = (status) => {
   if(status == "ej start") {
     return didNotStartSVG + '<small class="pl-1">Ej start</small>'
@@ -231,13 +280,6 @@ generateCompetitionsList = (data) => {
         html += '</td>'
       html += '</tr></table>'
     });
-
-    //document.getElementById("competitions").innerHTML = html //dp.sanitize(html);
-
-//    debug("dp: ")
-//    debug(html)
-//    debug(dp.sanitize(html, dp_config))
-//    debug(dp.sanitize(html))
     document.getElementById("competitions").innerHTML = html;
   } else {
     document.getElementById("competitions").innerHTML = "<li class='list-group-item'>Inga tävlingar att visa</li>"  ;
@@ -276,23 +318,21 @@ getLastPassings = (competitionId) => {
       debug(passings)
       debug(loadHash("pass"+competitionId))
 
-      //class: "Svart mellan"
-      //control: 1000
-      //controlName: ""
-      //passtime: "12:19:40"
-      //runnerName: "Magnus O"
-      //time: "ej start"
-
       let html = ""
-      passings.forEach(data => {
-        html += '<li class="list-group-item bg-light p-2">'
-          html += '<small class="mr-2">' + safe(data.passtime) + '</small>'
-          html += '<small class="mr-2 font-weight-bold">' + safe(data.runnerName) + '</small>'
-          html += '<small class="mr-2">(<a href="#" onclick="getClassResult(' + competitionId + ',\'' + safe(data.class) + '\');return false">' + safe(data.class) + '</a>)</small>'
-          //html += '<small class="mr-2">(' + data.controlName + ', ' + data.control + ')</small>'
-          html += '<small class="mr-auto">' + safe(generateResultTimeStatus(data.time)) + '</small>'
-        html += '</li>'
-      });
+
+      if(passings.length == 0) {
+        html = '<small>Inga resultat att visa</small>'
+      } else {
+        passings.forEach(data => {
+          html += '<li class="list-group-item bg-light p-2">'
+            html += '<small class="mr-2">' + safe(data.passtime) + '</small>'
+            html += '<small class="mr-2 font-weight-bold">' + safe(data.runnerName) + '</small>'
+            html += '<small class="mr-2">(<a href="#" onclick="getClassResult(' + competitionId + ',\'' + safe(data.class) + '\');return false">' + safe(data.class) + '</a>)</small>'
+            //html += '<small class="mr-2">(' + data.controlName + ', ' + data.control + ')</small>'
+            html += '<small class="mr-auto">' + safe(generateResultTimeStatus(data.time)) + '</small>'
+          html += '</li>'
+        });
+      }
       document.getElementById("passings").innerHTML = html;
     } else {
       console.log("No response!")
@@ -329,9 +369,13 @@ getClasses = (competitionId) => {
       saveHash(hashKey, json.hash);
 
       let html = ""
-      classes.forEach((data, idx) => {
-        html += '<button type="button" class="btn btn-secondary mr-2 mb-2 mt-0 ml-0 pl-2 pr-2 pt-0 pb-0" onclick="getClassResult(' + safe(competitionId) + ',\'' + safe(data.className) + '\')">' + safe(data.className) + '</button>'
-      });
+      if(classes.length == 0) {
+        html = '<small>Inga klasser att visa</small>'
+      } else {
+        classes.forEach((data, idx) => {
+          html += '<button type="button" class="btn btn-secondary mr-2 mb-2 mt-0 ml-0 pl-2 pr-2 pt-0 pb-0" onclick="getClassResult(' + safe(competitionId) + ',\'' + safe(data.className) + '\')">' + safe(data.className) + '</button>'
+        }); 
+      }
 
       document.getElementById("classes").innerHTML = html
     } else {
@@ -361,6 +405,9 @@ getClassResult = (competitionId, className) => {
   let hashKey = "className"+competitionId+className
   activateClassButtons(className)
 
+  // Temp fix
+  getLastPassings(competitionId)
+
   // Fetch new data
   var xhr = new XMLHttpRequest();
   xhr.open("GET", "https://liveresultat.orientering.se/api.php?method=getclassresults&comp=" + competitionId + "&unformattedTimes=false&class=" + className + "&last_hash=" + loadHash(hashKey));
@@ -384,18 +431,6 @@ getClassResult = (competitionId, className) => {
       let html = ""
       let dirtySettings = loadSettings()
       classResult.forEach((data, idx) => {
-        //html += '<button type="button" class="btn btn-sm btn-secondary mr-1 mb-1 mt-0 ml-0 pl-1 pr-1 pt-0 pb-0" onclick="getClassResult(' + competitionId + ',\'' + data.className + '\')">' + data.className + '</button>'
-        //html += JSON.stringify(data)
-
-        // 43:40 == 262000
-        // +01:25 == 8500
-        // 3704500 == ?
-
-        // {"place": "1", "name": "Nina Djerf", "club": "Lerums SOK", "result": "60:38", "status" : 0, "timeplus": "+00:00", "progress": 100 , "start": 3746300}
-        // {"place": "1", "name": "Nina Djerf", "club": "Lerums SOK", "result": "363800", "status" : 0, "timeplus": "0", "progress": 100 , "start": 3746300}
-        // 1 Nina Djerf  Lerums SOK  start: 10:24:23  result: 60:38 (1) timeplus: +00:00
-
-        // 3746300 * 10 milliseconds -> to UTC -> 10:24:23
 
         // {"place":"3","name":"Leif Orienterare","club":"Sjövalla FK","result":"38:11","status":0,"timeplus":"+05:41","progress":100,"start":3716900}
         html += '<tr>'
@@ -415,7 +450,7 @@ getClassResult = (competitionId, className) => {
 
       document.getElementById("resultRows").innerHTML = html
     } else {
-      debug("what?" + xhr.status + ", " + json.status)
+      //debug("what?" + xhr.status + ", " + json.status)
       debug(json)
     }
   });
@@ -602,9 +637,53 @@ showResultScreen = (name) => {
 }
 
 showCompetitionResults = (competitionId, competitionName) => {
+  debug("hello: " + competitionName)
+  if(!(competitionName !== undefined)) {
+    debug("check extra")
+    let data = getCompetitionInfo(competitionId)
+    debug("data: " + data)
+    competitionName = data.name
+  }
   showResultScreen(competitionName)
   getClasses(competitionId)
   getLastPassings(competitionId)
+}
+
+const timerTTL = 15000 // 15 seconds according to the API
+let resultTimerStartTime
+let resultTimer
+startResultTimer = () => {
+  document.getElementById("resultTimerToggler").innerHTML = timerOnSVG
+  document.getElementById("resultTimer").style='width: 0%;'
+  resultTimerStartTime = Date.now()
+  resultTimer = setInterval(tickResultTimer, 500)
+}
+stopResultTimer = () => {
+  document.getElementById("resultTimerToggler").innerHTML = timerOffSVG
+  document.getElementById("resultTimer").style='width: 0%;'
+  resultTimerStartTime = Date.now()
+  clearInterval(resultTimer)
+}
+tickResultTimer = () => {
+  let now = Date.now()
+  document.getElementById("resultTimer").style='width: ' + Math.round(((now - resultTimerStartTime)/timerTTL)*100) + '%;'
+  //debug(Math.round(((now - resultTimerStartTime)/timerTTL)*100))
+  //debug(now - resultTimerStartTime)
+  if(now - resultTimerStartTime > timerTTL) {
+    stopResultTimer()
+  }
+}
+togglerResultTimer = () => {
+  //debug("togglerResultTimer")
+  let settings = loadSettings()
+  if(settings.resultTimer) {
+    startResultTimer()
+    settings.resultTimer = false
+  } else {
+    stopResultTimer()
+    settings.resultTimer = true
+  }
+  saveSettings(settings)
 }
 
 // EVENT LISTENERS 
@@ -616,10 +695,37 @@ $( document ).ready(function() {
   // Get recent competitions
   //$('#onlyOrganizerFavorites')[0].checked
   let settings = loadSettings()
-  if(settings.onlyClubFavorites) {
-    $('#onlyOrganizerFavorites')[0].checked = true
-  }
-  getCompetitions()
+  //let currentCompetition = -1
+  //if(!Number.isNaN(Number.parseInt(document.location.hash.replace('#cid=','')))) {
+  //  currentCompetition = Number.parseInt(document.location.hash.replace('#cid=',''))
+
+    /*if(settings.resultTimer) {
+      startResultTimer()
+    } else {
+      stopResultTimer()
+    }
+*/
+/*
+    if(settings.lastPassingTimer) {
+      document.getElementById("lastPassingTimerToggler").innerHTML = timerOffSVG
+    } else {
+      document.getElementById("lastPassingTimerToggler").innerHTML = timerOffSVG
+    }
+    if(settings.resultTimer) {
+      document.getElementById("resultTimerToggler").innerHTML = timerOffSVG
+    } else {
+      document.getElementById("resultTimerToggler").innerHTML = timerOffSVG
+    }*/
+
+    //showResultScreen()
+    //showCompetitionResults(currentCompetition)
+
+  //} else {
+    if(settings.onlyClubFavorites) {
+      $('#onlyOrganizerFavorites')[0].checked = true
+    }
+    getCompetitions()
+  //}
 
   $('#settingsBackdrop').on('show.bs.modal', function (e) {
     //debug("Settings show")
@@ -637,6 +743,12 @@ $( document ).ready(function() {
     }
     getCompetitions()
   })
+
+/*
+  $('#resultTimerToggler').click(function (e) {
+    togglerResultTimer()
+  })
+  */
   /*$('#onlyPersonFavorites').change(function (e) {
     if(!$('#onlyPersonFavorites')[0].checked) {
       debug("person favorites")
