@@ -5,3 +5,6 @@ Baserad på [github.com/petlof/liveresults](https://github.com/petlof/liveresult
 
 För att använda applikationen, besök [callebokedal.github.io/live-ol](https://callebokedal.github.io/live-ol).
 
+## Ytterligare information/funktioner
+- Välj favoritlag i listan för alla tävlingar
+- Välj favoritlöpare i resultattabell

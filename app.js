@@ -225,14 +225,16 @@ let generateFavoriteSVG = (isFavorite) => {
 // 3 - MP (Missing Punch) --> missingPunchSVG
 // 4 - DSQ (Disqualified) --> "Cone striped"
 // 5 - OT (Over (max) time) --> overTimeSVG
-// 9 - Not Started Yet --> "Alarm" ?
+// 9 - Not Started Yet --> "Alarm" Clock ?
 // 10 - Not Started Yet --> 
 // 11 - Walk Over (Resigned before the race started) --> 
 // 12 - Moved up (The runner have been moved to a higher class) --> 
-const didNotStartSVG = '<svg class="bi bi-exclamation-octagon-fill text-danger" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M11.46.146A.5.5 0 0011.107 0H4.893a.5.5 0 00-.353.146L.146 4.54A.5.5 0 000 4.893v6.214a.5.5 0 00.146.353l4.394 4.394a.5.5 0 00.353.146h6.214a.5.5 0 00.353-.146l4.394-4.394a.5.5 0 00.146-.353V4.893a.5.5 0 00-.146-.353L11.46.146zM8 4a.905.905 0 00-.9.995l.35 3.507a.552.552 0 001.1 0l.35-3.507A.905.905 0 008 4zm.002 6a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd"/></svg>'
-const didNotFinishSVG = '<svg class="bi bi-x text-danger" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M11.854 4.146a.5.5 0 010 .708l-7 7a.5.5 0 01-.708-.708l7-7a.5.5 0 01.708 0z" clip-rule="evenodd"/><path fill-rule="evenodd" d="M4.146 4.146a.5.5 0 000 .708l7 7a.5.5 0 00.708-.708l-7-7a.5.5 0 00-.708 0z" clip-rule="evenodd"/></svg>'
-const missingPunchSVG = '<svg class="bi bi-x-square text-danger" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M14 1H2a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V2a1 1 0 00-1-1zM2 0a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V2a2 2 0 00-2-2H2z" clip-rule="evenodd"/><path fill-rule="evenodd" d="M11.854 4.146a.5.5 0 010 .708l-7 7a.5.5 0 01-.708-.708l7-7a.5.5 0 01.708 0z" clip-rule="evenodd"/><path fill-rule="evenodd" d="M4.146 4.146a.5.5 0 000 .708l7 7a.5.5 0 00.708-.708l-7-7a.5.5 0 00-.708 0z" clip-rule="evenodd"/></svg>'
+const didNotStartSVG = '<svg class="bi bi-dash-circle-fill text-secondary" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M16 8A8 8 0 110 8a8 8 0 0116 0zM4 7.5a.5.5 0 000 1h8a.5.5 0 000-1H4z" clip-rule="evenodd"/></svg>'
+const didNotFinishSVG = '<svg class="bi bi-x-circle-fill text-secondary" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M16 8A8 8 0 110 8a8 8 0 0116 0zm-4.146-3.146a.5.5 0 00-.708-.708L8 7.293 4.854 4.146a.5.5 0 10-.708.708L7.293 8l-3.147 3.146a.5.5 0 00.708.708L8 8.707l3.146 3.147a.5.5 0 00.708-.708L8.707 8l3.147-3.146z" clip-rule="evenodd"/></svg>'
+const missingPunchSVG = '<svg class="bi bi-exclamation-circle-fill text-secondary" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M16 8A8 8 0 110 8a8 8 0 0116 0zM8 4a.905.905 0 00-.9.995l.35 3.507a.552.552 0 001.1 0l.35-3.507A.905.905 0 008 4zm.002 6a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd"/></svg>'
 const overTimeSVG = '<svg class="bi bi-clock-history text-danger" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M8.515 1.019A7 7 0 008 1V0a8 8 0 01.589.022l-.074.997zm2.004.45a7.003 7.003 0 00-.985-.299l.219-.976c.383.086.76.2 1.126.342l-.36.933zm1.37.71a7.01 7.01 0 00-.439-.27l.493-.87a8.025 8.025 0 01.979.654l-.615.789a6.996 6.996 0 00-.418-.302zm1.834 1.79a6.99 6.99 0 00-.653-.796l.724-.69c.27.285.52.59.747.91l-.818.576zm.744 1.352a7.08 7.08 0 00-.214-.468l.893-.45a7.976 7.976 0 01.45 1.088l-.95.313a7.023 7.023 0 00-.179-.483zm.53 2.507a6.991 6.991 0 00-.1-1.025l.985-.17c.067.386.106.778.116 1.17l-1 .025zm-.131 1.538c.033-.17.06-.339.081-.51l.993.123a7.957 7.957 0 01-.23 1.155l-.964-.267c.046-.165.086-.332.12-.501zm-.952 2.379c.184-.29.346-.594.486-.908l.914.405c-.16.36-.345.706-.555 1.038l-.845-.535zm-.964 1.205c.122-.122.239-.248.35-.378l.758.653a8.073 8.073 0 01-.401.432l-.707-.707z" clip-rule="evenodd"/><path fill-rule="evenodd" d="M8 1a7 7 0 104.95 11.95l.707.707A8.001 8.001 0 118 0v1z" clip-rule="evenodd"/><path fill-rule="evenodd" d="M7.5 3a.5.5 0 01.5.5v5.21l3.248 1.856a.5.5 0 01-.496.868l-3.5-2A.5.5 0 017 9V3.5a.5.5 0 01.5-.5z" clip-rule="evenodd"/></svg>'
+//const notStartedSVG = '<svg class="bi bi-clock" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M8 15A7 7 0 108 1a7 7 0 000 14zm8-7A8 8 0 110 8a8 8 0 0116 0z" clip-rule="evenodd"/><path fill-rule="evenodd" d="M7.5 3a.5.5 0 01.5.5v5.21l3.248 1.856a.5.5 0 01-.496.868l-3.5-2A.5.5 0 017 9V3.5a.5.5 0 01.5-.5z" clip-rule="evenodd"/></svg>'
+const notStartedSVG = '<svg class="bi bi-clock-fill text-secondary" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M16 8A8 8 0 110 8a8 8 0 0116 0zM8 3.5a.5.5 0 00-1 0V9a.5.5 0 00.252.434l3.5 2a.5.5 0 00.496-.868L8 8.71V3.5z" clip-rule="evenodd"/></svg>'
 const olSVG = '<svg class="bi bi-diamond-half" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M6.95.435c.58-.58 1.52-.58 2.1 0l6.515 6.516c.58.58.58 1.519 0 2.098L9.05 15.565c-.58.58-1.519.58-2.098 0L.435 9.05a1.482 1.482 0 010-2.098L6.95.435zM8 .989a.493.493 0 00-.35.145L1.134 7.65a.495.495 0 000 .7l6.516 6.516a.493.493 0 00.35.145V.989z" clip-rule="evenodd" transform="rotate(45 10 10)"/></svg>'
 
 
@@ -264,6 +266,7 @@ let generateResultTimeStatus = (status) => {
   }
 }
 
+// Display comptetions
 let generateCompetitionsList = (data) => {
   if(data.length > 0) {
     let html = ""
@@ -288,7 +291,7 @@ let generateCompetitionsList = (data) => {
             html += generateFavoriteSVG(false)
           }
           html += '</a>'
-          html += '<small>' + safe(data.date) + '</small>'
+          html += '<small>' + safe(data.date) + ' ' +  moment(safe(data.date)).fromNow() + '</small>'
         html += '</div>'
         html += '<h6 class="d-flex align-items-end flex-column mb-1 mt-1 mr-1"><a href="#cid=' + safe(data.id) + '" onclick="showCompetitionResults(' + safe(data.id) + ', \'' + safe(data.name) + '\')" class="text-warning">' + safe(data.name) + '</a></h6>'
         html += '</td>'
@@ -416,7 +419,54 @@ let activateClassButtons = (className) => {
   });
 }
 
-// api.php?comp=10259&method=getclassresults&unformattedTimes=true&class=Öppen-1
+let getStatus = (code) => {
+// 0 - OK
+// 1 - DNS (Did Not Start)
+// 2 - DNF (Did not finish)
+// 3 - MP (Missing Punch)
+// 4 - DSQ (Disqualified)
+// 5 - OT (Over (max) time)
+// 9 - Not Started Yet
+// 10 - Not Started Yet
+// 11 - Walk Over (Resigned before the race started)
+// 12 - Moved up (The runner have been moved to a higher class)
+  switch(code) {
+    case 0:
+      return "OK"
+      break;
+    case 1:
+      return "Ej start"
+      break;
+    case 2:
+      return "Avbrutit"
+      break;
+    case 3:
+      return "Felstämplat"
+      break;
+    case 4:
+      return "Diskad"
+      break;
+    case 5:
+      return "Över maxtid"
+      break;
+    case 9:
+      return "Ej startat ännu"
+      break;
+    case 10:
+      return "Ej startat ännu"
+      break;
+    case 11:
+      return "Återbud"
+      break;
+    case 12:
+      return "Bytt klass"
+      break;
+    default:
+      debug("Unknown status")
+  }
+}
+
+// api.php?comp=10259&method=getclassresults&includetotal=true&unformattedTimes=true&class=Öppen-1
 let getClassResult = (competitionId, className) => {
   $("#resultLabel")[0].innerHTML = "Resultat - " + className
   debug("get classresult: " + competitionId + ", " + className)
@@ -428,6 +478,7 @@ let getClassResult = (competitionId, className) => {
 
   // Fetch new data
   var xhr = new XMLHttpRequest();
+  //xhr.open("GET", "https://liveresultat.orientering.se/api.php?method=getclassresults&includetotal=true&comp=" + competitionId + "&unformattedTimes=false&class=" + className + "&last_hash=" + loadHash(hashKey));
   xhr.open("GET", "https://liveresultat.orientering.se/api.php?method=getclassresults&comp=" + competitionId + "&unformattedTimes=false&class=" + className + "&last_hash=" + loadHash(hashKey));
   xhr.send(null);
 
@@ -450,19 +501,44 @@ let getClassResult = (competitionId, className) => {
       let dirtySettings = loadSettings()
       classResult.forEach((data, idx) => {
 
+
+// 0 - OK --> "Check box"
+// 1 - DNS (Did Not Start) --> didNotStartSVG 
+// 2 - DNF (Did not finish) --> didNotFinishSVG
+// 3 - MP (Missing Punch) --> missingPunchSVG
+// 4 - DSQ (Disqualified) --> "Cone striped"
+// 5 - OT (Over (max) time) --> overTimeSVG
+// 9 - Not Started Yet --> "Alarm" Clock ?
+// 10 - Not Started Yet --> 
+// 11 - Walk Over (Resigned before the race started) --> 
+// 12 - Moved up (The runner have been moved to a higher class) --> 
+
         // {"place":"3","name":"Leif Orienterare","club":"Sjövalla FK","result":"38:11","status":0,"timeplus":"+05:41","progress":100,"start":3716900}
         html += '<tr>'
-          if(isBookmarked(data.name, dirtySettings)) {
+          if(data.status === 9 || data.status === 10) {            
+            html += '<td class="text-center" scope="row">' + notStartedSVG + '</td>'
+          } else if(data.status === 1) {            
+            html += '<td class="text-center" scope="row">' + didNotStartSVG + '</td>'
+          } else if(data.status === 3) {            
+            html += '<td class="text-center" scope="row">' + missingPunchSVG + '</td>'
+          } else {
             html += '<td class="text-center" scope="row">' + safe(data.place) + '</td>'
+          }
+          if(isBookmarked(data.name, dirtySettings)) {
+            //html += '<td class="text-center" scope="row">' + safe(data.place) + '</td>'
             html += '<td class="">' + safe(data.name) + '<a href="#" title="Avmarkera" class="pl-1 link" onclick="toggleBookmark(\'' + safe(data.name) + '\', this);return false;">' + safe(generateFavoriteSVG(true)) + '</a>'
           } else {
-            html += '<td class="text-center" scope="row">' + data.place + '</td>'
             html += '<td class="">' + safe(data.name) + '<a href="#" title="Bokmärk" class="pl-1 link" onclick="toggleBookmark(\'' + safe(data.name) + '\', this);return false;">' + safe(generateFavoriteSVG(false)) + '</a>'
           }
           html += '<br><a href="#" title="Visa klubbresultat" class="small text-warning" onclick="getClubResult(\'' + competitionId + '\',\'' + safe(data.club) + '\')">' + safe(data.club) + '</a></td>'
-          html += '<td class="small text-center"">' + moment(data.start * 10).subtract(1,'hour').format("HH:mm:ss") + '</td>' // Summertime. What happens in wintertime??
-          html += '<td class="small text-center"">' + safe(data.result) + '</td>'
-          html += '<td class="small text-center"">' + safe(data.timeplus) + '</td>'
+            html += '<td class="small text-center">' + moment(data.start * 10).subtract(1,'hour').format("HH:mm:ss") + '</td>' // Summertime. What happens in wintertime??
+          //if(data.status === 9 || data.status === 10) {
+          if(data.status !== 0) {
+            html += '<td class="small text-center" colspan="2">' + getStatus(data.status) + '</td>'
+          } else {
+            html += '<td class="small text-center">' + safe(data.result) + '</td>'
+            html += '<td class="small text-center">' + safe(data.timeplus) + '</td>'
+          }
         html += '</tr><!-- ' + safe(data.status) + ', ' + safe(data.progress) + ' -->'
       });
 
