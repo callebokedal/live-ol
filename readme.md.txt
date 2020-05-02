@@ -5,5 +5,3 @@ Baserad på [github.com/petlof/liveresults](https://github.com/petlof/liveresult
 
 För att använda applikationen, besök [callebokedal.github.io/live-ol](https://callebokedal.github.io/live-ol).
 
-
-
