@@ -1,7 +1,10 @@
+'use strict';
+
 // Init moment
 moment().format()
+moment.locale('sv');
 
-const version = "1.3";
+const version = "1.4";
 
 const dp = DOMPurify;
 var dp_config = {
@@ -36,7 +39,7 @@ const defaultSettings = {
 //let settings
 
 const hashCache = new Map();
-loadHash = (key) => {
+let loadHash = (key) => {
   //debug("load: " + key)
   if(hashCache.has(key)) {
     //debug(hashCache.get(key))
@@ -45,21 +48,21 @@ loadHash = (key) => {
     return ""
   }
 }
-saveHash = (key, value) => {
+let saveHash = (key, value) => {
   //debug("key + value: " + key + "=" + value)
   hashCache.set(key, value)
 }
 
 // Results are cached - we need to stor local copy
 const resultCache = new Map();
-loadResult = (key) => {
+let loadResult = (key) => {
   if(resultCache.has(key)) {
     return resultCache.get(key)
   } else {
     return {}
   }
 }
-saveResult = (key, data) => {
+let saveResult = (key, data) => {
   resultCache.set(key,data)
 }
 
@@ -107,7 +110,7 @@ saveResult = (key, data) => {
 }*/
 
 // api.php?method=getcompetitions
-getCompetitions = () => {
+let getCompetitions = () => {
   debug("getCompetitions");
 
   let settings = loadSettings(defaultSettings)
@@ -144,7 +147,7 @@ getCompetitions = () => {
   }
 };
 
-filterCompetitions = (competitions, settings) => {
+let filterCompetitions = (competitions, settings) => {
   //debug("before filter: " + competitions)
   // Get settings
   let filterDays = 31;
@@ -170,23 +173,23 @@ filterCompetitions = (competitions, settings) => {
   return filtered;
 }
 
-debug = (str) => {
+let debug = (str) => {
   //console.log(str)
 }
 
-saveCompetitionsListCache = (data) => {
+let saveCompetitionsListCache = (data) => {
   let now = moment();
   debug("saveCompetitionsListCache: " + JSON.stringify(data))
   localStorage.setItem("cachedCompetitionsTimestamp", JSON.stringify(now));
   localStorage.setItem("cachedCompetitions", JSON.stringify(data));
 }
 
-removeCompetitionsListCache = () => {
+let removeCompetitionsListCache = () => {
   localStorage.removeItem("cachedCompetitionsTimestamp");
   localStorage.removeItem("cachedCompetitions"); 
 }
 
-getCompetitionsListCache = (settings) => {
+let getCompetitionsListCache = (settings) => {
   let cachedCompetitionsTimestamp = localStorage.getItem("cachedCompetitionsTimestamp") ? JSON.parse(localStorage.getItem("cachedCompetitionsTimestamp")) : moment()
 
   let secondsSinceLastFetch = moment().diff(cachedCompetitionsTimestamp,'seconds');
@@ -201,7 +204,7 @@ getCompetitionsListCache = (settings) => {
   return cachedCompetitions
 }
 
-generateFavoriteSVG = (isFavorite) => {
+let generateFavoriteSVG = (isFavorite) => {
   let html = ''
   if(isFavorite) {
     html += '<svg class="bi bi-star-fill text-warning" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">'
@@ -238,7 +241,7 @@ const bookmarkedSVG = '<svg class="bi bi-bookmark-fill text-warning" width="1em"
 const timerOffSVG = '<svg class="bi bi-arrow-repeat" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M2.854 7.146a.5.5 0 00-.708 0l-2 2a.5.5 0 10.708.708L2.5 8.207l1.646 1.647a.5.5 0 00.708-.708l-2-2zm13-1a.5.5 0 00-.708 0L13.5 7.793l-1.646-1.647a.5.5 0 00-.708.708l2 2a.5.5 0 00.708 0l2-2a.5.5 0 000-.708z" clip-rule="evenodd"/><path fill-rule="evenodd" d="M8 3a4.995 4.995 0 00-4.192 2.273.5.5 0 01-.837-.546A6 6 0 0114 8a.5.5 0 01-1.001 0 5 5 0 00-5-5zM2.5 7.5A.5.5 0 013 8a5 5 0 009.192 2.727.5.5 0 11.837.546A6 6 0 012 8a.5.5 0 01.501-.5z" clip-rule="evenodd"/></svg>'
 const timerOnSVG = '<svg class="bi bi-arrow-repeat text-primary" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M2.854 7.146a.5.5 0 00-.708 0l-2 2a.5.5 0 10.708.708L2.5 8.207l1.646 1.647a.5.5 0 00.708-.708l-2-2zm13-1a.5.5 0 00-.708 0L13.5 7.793l-1.646-1.647a.5.5 0 00-.708.708l2 2a.5.5 0 00.708 0l2-2a.5.5 0 000-.708z" clip-rule="evenodd"/><path fill-rule="evenodd" d="M8 3a4.995 4.995 0 00-4.192 2.273.5.5 0 01-.837-.546A6 6 0 0114 8a.5.5 0 01-1.001 0 5 5 0 00-5-5zM2.5 7.5A.5.5 0 013 8a5 5 0 009.192 2.727.5.5 0 11.837.546A6 6 0 012 8a.5.5 0 01.501-.5z" clip-rule="evenodd"/></svg>'
 
-generateResultTimeStatus = (status) => {
+let generateResultTimeStatus = (status) => {
   if(status == "ej start") {
     return didNotStartSVG + '<small class="pl-1">Ej start</small>'
   } else if(status == "utgått") {
@@ -250,7 +253,7 @@ generateResultTimeStatus = (status) => {
   }
 }
 
-generateCompetitionsList = (data) => {
+let generateCompetitionsList = (data) => {
   if(data.length > 0) {
     let html = ""
     let settings = loadSettings()
@@ -287,7 +290,7 @@ generateCompetitionsList = (data) => {
 }
 
 // api.php?method=getclasses&comp=XXXX&last_hash=abcdefg
-getLastPassings = (competitionId) => {
+let getLastPassings = (competitionId) => {
   debug("get results")
   let hashKey = "pass"+competitionId
 
@@ -341,7 +344,7 @@ getLastPassings = (competitionId) => {
 }
 
 // api.php?method=getclasses&comp=XXXX&last_hash=abcdefg
-getClasses = (competitionId) => {
+let getClasses = (competitionId) => {
   debug("get classes: " + competitionId)
   let hashKey = "classes"+competitionId
 
@@ -372,7 +375,11 @@ getClasses = (competitionId) => {
       if(classes.length == 0) {
         html = '<small>Inga klasser att visa</small>'
       } else {
-        classes.forEach((data, idx) => {
+
+        // Sort
+        classes.sort((a,b) => {
+          return a.className.length - b.className.length || a.className - b.className;
+        }).forEach((data, idx) => {
           html += '<button type="button" class="btn btn-secondary mr-2 mb-2 mt-0 ml-0 pl-2 pr-2 pt-0 pb-0" onclick="getClassResult(' + safe(competitionId) + ',\'' + safe(data.className) + '\')">' + safe(data.className) + '</button>'
         }); 
       }
@@ -384,7 +391,7 @@ getClasses = (competitionId) => {
   });
 }
 
-activateClassButtons = (className) => {
+let activateClassButtons = (className) => {
   $("#classes button").each((idx,btn) => {
     if(btn.innerHTML === className) {
       $(btn).addClass("active")
@@ -399,7 +406,7 @@ activateClassButtons = (className) => {
 }
 
 // api.php?comp=10259&method=getclassresults&unformattedTimes=true&class=Öppen-1
-getClassResult = (competitionId, className) => {
+let getClassResult = (competitionId, className) => {
   $("#resultLabel")[0].innerHTML = "Resultat - " + className
   debug("get classresult: " + competitionId + ", " + className)
   let hashKey = "className"+competitionId+className
@@ -442,7 +449,7 @@ getClassResult = (competitionId, className) => {
             html += '<td class="">' + safe(data.name) + '<a href="#" title="Bokmärk" class="pl-1 link" onclick="toggleBookmark(\'' + safe(data.name) + '\', this);return false;">' + safe(generateFavoriteSVG(false)) + '</a>'
           }
           html += '<br><a href="#" title="Visa klubbresultat" class="small text-warning" onclick="getClubResult(\'' + competitionId + '\',\'' + safe(data.club) + '\')">' + safe(data.club) + '</a></td>'
-          html += '<td class="small text-center"">' + moment(data.start * 10).subtract(1,'hour').format("hh:mm:ss") + '</td>' // Summertime. What happens in wintertime??
+          html += '<td class="small text-center"">' + moment(data.start * 10).subtract(1,'hour').format("HH:mm:ss") + '</td>' // Summertime. What happens in wintertime??
           html += '<td class="small text-center"">' + safe(data.result) + '</td>'
           html += '<td class="small text-center"">' + safe(data.timeplus) + '</td>'
         html += '</tr><!-- ' + safe(data.status) + ', ' + safe(data.progress) + ' -->'
@@ -457,7 +464,7 @@ getClassResult = (competitionId, className) => {
 }
 
 // api.php?comp=10259&method=getcclubresults&unformattedTimes=true&club=Klyftamo
-getClubResult = (competitionId, clubName) => {
+let getClubResult = (competitionId, clubName) => {
   $("#resultLabel")[0].innerHTML = "Resultat - " + safe(clubName)
   debug("get clubresult: " + competitionId + ", " + clubName)
   let hashKey = "clubName"+competitionId+clubName
@@ -513,12 +520,12 @@ getClubResult = (competitionId, clubName) => {
 
 }
 
-resetDefaultSettings = () => {
+let resetDefaultSettings = () => {
   saveSettings(defaultSettings)
   generateSettingsList()
 }
 
-generateSettingsList = () => {
+let generateSettingsList = () => {
 
     let settings = loadSettings()
     debug("loaded settings" + JSON.stringify(settings))
@@ -553,11 +560,11 @@ generateSettingsList = () => {
     document.getElementById("settings").innerHTML = html;
 }
 
-isBookmarked = (name, cachedSettings) => {
+let isBookmarked = (name, cachedSettings) => {
   let settings = cachedSettings || loadSettings()
   return settings && settings.bookmarks && settings.bookmarks.includes(name)
 } 
-toggleBookmark = (name, el) => {
+let toggleBookmark = (name, el) => {
   let settings = loadSettings()
   if(isBookmarked(name, settings)) {
     settings.bookmarks = settings.bookmarks.filter(n => n !== name)
@@ -570,13 +577,13 @@ toggleBookmark = (name, el) => {
   }
 }
 
-quickAddFavoriteOrganizer = (organizerName) => {
+let quickAddFavoriteOrganizer = (organizerName) => {
   let settings = loadSettings()
   settings.favoriteOrganizors.push(organizerName)
   saveSettings(settings)
   getCompetitions()
 }
-quickRemoveFavoriteOrganizer = (organizerName) => {
+let quickRemoveFavoriteOrganizer = (organizerName) => {
   let settings = loadSettings()
   settings.favoriteOrganizors = settings.favoriteOrganizors.filter(name => name !== organizerName)
   if(settings.favoriteOrganizors.length == 0) {
@@ -586,7 +593,7 @@ quickRemoveFavoriteOrganizer = (organizerName) => {
   getCompetitions()
 }
 
-removeFavoriteOrganizer = (organizerName) => {
+let removeFavoriteOrganizer = (organizerName) => {
   debug("removeFavoriteOrganizer: " + organizerName)
   let settings = loadSettings()
   debug("settings before: " + JSON.stringify(settings))
@@ -598,7 +605,7 @@ removeFavoriteOrganizer = (organizerName) => {
   saveSettings(settings)
 }
 
-loadSettings = () => {
+let loadSettings = () => {
   //debug("loadSettings - defaultSettings: " + JSON.stringify(defaultSettings));
   let settings = localStorage.getItem("settings") ? JSON.parse(localStorage.getItem("settings")) : defaultSettings;
   debug("load settings: " + JSON.stringify(settings))
@@ -608,13 +615,13 @@ loadSettings = () => {
   return settings;
 }
 
-saveSettings = (settings) => {
+let saveSettings = (settings) => {
   debug("save settings: " + JSON.stringify(settings))
   localStorage.setItem("settings", JSON.stringify(settings))
   generateSettingsList(settings)
 }
 
-showCompetitionScreen = () => {
+let showCompetitionScreen = () => {
   $('#competitonsLabel').addClass('active')
   $('#resultsLabel').removeClass('active text-white')
   $('#resultsLabel').addClass('disabled')
@@ -622,7 +629,7 @@ showCompetitionScreen = () => {
   $('#resultsContainer').addClass('d-none')
   document.getElementById("resultRows").innerHTML = '<tr><td colpsan="5">Välj klass</td></tr>'
 }
-showResultScreen = (name) => {
+let showResultScreen = (name) => {
   $('#competitonsLabel').removeClass('active')
   $('#resultsLabel').addClass('active text-white')
   $('#competitionsContainer').addClass('d-none')
@@ -636,12 +643,9 @@ showResultScreen = (name) => {
   document.getElementById("competitionName").innerHTML = safe(name)
 }
 
-showCompetitionResults = (competitionId, competitionName) => {
+let showCompetitionResults = (competitionId, competitionName) => {
   debug("hello: " + competitionName)
-  if(!(competitionName !== undefined)) {
-    debug("check extra")
-    let data = getCompetitionInfo(competitionId)
-    debug("data: " + data)
+  if(typeof competitionName === 'undefined') {
     competitionName = data.name
   }
   showResultScreen(competitionName)
@@ -652,19 +656,19 @@ showCompetitionResults = (competitionId, competitionName) => {
 const timerTTL = 15000 // 15 seconds according to the API
 let resultTimerStartTime
 let resultTimer
-startResultTimer = () => {
+let startResultTimer = () => {
   document.getElementById("resultTimerToggler").innerHTML = timerOnSVG
   document.getElementById("resultTimer").style='width: 0%;'
   resultTimerStartTime = Date.now()
   resultTimer = setInterval(tickResultTimer, 500)
 }
-stopResultTimer = () => {
+let stopResultTimer = () => {
   document.getElementById("resultTimerToggler").innerHTML = timerOffSVG
   document.getElementById("resultTimer").style='width: 0%;'
   resultTimerStartTime = Date.now()
   clearInterval(resultTimer)
 }
-tickResultTimer = () => {
+let tickResultTimer = () => {
   let now = Date.now()
   document.getElementById("resultTimer").style='width: ' + Math.round(((now - resultTimerStartTime)/timerTTL)*100) + '%;'
   //debug(Math.round(((now - resultTimerStartTime)/timerTTL)*100))
@@ -673,7 +677,7 @@ tickResultTimer = () => {
     stopResultTimer()
   }
 }
-togglerResultTimer = () => {
+let togglerResultTimer = () => {
   //debug("togglerResultTimer")
   let settings = loadSettings()
   if(settings.resultTimer) {
