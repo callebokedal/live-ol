@@ -341,12 +341,13 @@ let getLastPassings = (competitionId) => {
         html = '<small>Inga resultat att visa</small>'
       } else {
         passings.forEach(data => {
-          html += '<li class="list-group-item bg-light p-2">'
+          html += '<li class="list-group-item bg-light p-2 d-flex">'
             html += '<small class="mr-2">' + safe(data.passtime) + '</small>'
             html += '<small class="mr-2 font-weight-bold">' + safe(data.runnerName) + '</small>'
-            html += '<small class="mr-2">(<a href="#" onclick="getClassResult(' + competitionId + ',\'' + safe(data.class) + '\');return false">' + safe(data.class) + '</a>)</small>'
-            //html += '<small class="mr-2">(' + data.controlName + ', ' + data.control + ')</small>'
             html += '<small class="mr-auto">' + safe(generateResultTimeStatus(data.time)) + '</small>'
+            //html += '<small class="mr-2">(<a href="#" onclick="getClassResult(' + competitionId + ',\'' + safe(data.class) + '\');return false">' + safe(data.class) + '</a>)</small>'
+            html += '<button type="button" class="btn btn-dark btn-sm pl-1 pr-1 pt-0 pb-0 text-warning ml-auto" onclick="getClassResult(' + competitionId + ',\'' + safe(data.class) + '\');">' + safe(data.class) + '</button>'
+            //html += '<small class="mr-2">(' + data.controlName + ', ' + data.control + ')</small>'
           html += '</li>'
         });
       }
@@ -394,7 +395,7 @@ let getClasses = (competitionId) => {
         classes.sort((a,b) => {
           return a.className.length - b.className.length || a.className - b.className;
         }).forEach((data, idx) => {
-          html += '<button type="button" class="btn btn-secondary mr-2 mb-2 mt-0 ml-0 pl-2 pr-2 pt-0 pb-0" onclick="getClassResult(' + safe(competitionId) + ',\'' + safe(data.className) + '\')">' + safe(data.className) + '</button>'
+          html += '<button type="button" class="btn btn-dark text-warning mr-2 mb-2 mt-0 ml-0 pl-2 pr-2 pt-0 pb-0" onclick="getClassResult(' + safe(competitionId) + ',\'' + safe(data.className) + '\')">' + safe(data.className) + '</button>'
         }); 
       }
 
@@ -409,12 +410,18 @@ let activateClassButtons = (className) => {
   $("#classes button").each((idx,btn) => {
     if(btn.innerHTML === className) {
       $(btn).addClass("active")
+      //$(btn).addClass("btn-warning")
       $(btn).addClass("btn-primary")
-      $(btn).removeClass("btn-secondary")
+      $(btn).removeClass("btn-dark")
+      $(btn).addClass("text-white")
+      $(btn).removeClass("text-warning")
     } else {
       $(btn).removeClass("active")
+      //$(btn).removeClass("btn-warning")
       $(btn).removeClass("btn-primary")
-      $(btn).addClass("btn-secondary")
+      $(btn).addClass("btn-dark")
+      $(btn).removeClass("text-white")
+      $(btn).addClass("text-warning")
     }
   });
 }
@@ -515,20 +522,22 @@ let getClassResult = (competitionId, className) => {
 
         // {"place":"3","name":"Leif Orienterare","club":"Sjövalla FK","result":"38:11","status":0,"timeplus":"+05:41","progress":100,"start":3716900}
         html += '<tr>'
-          if(data.status === 9 || data.status === 10) {            
+          if(data.status === 9 || data.status === 10) {
             html += '<td class="text-center" scope="row">' + notStartedSVG + '</td>'
-          } else if(data.status === 1) {            
+          } else if(data.status === 1) {
             html += '<td class="text-center" scope="row">' + didNotStartSVG + '</td>'
-          } else if(data.status === 3) {            
+          } else if(data.status === 2) {
+            html += '<td class="text-center" scope="row">' + didNotFinishSVG + '</td>'
+          } else if(data.status === 3) {
             html += '<td class="text-center" scope="row">' + missingPunchSVG + '</td>'
           } else {
             html += '<td class="text-center" scope="row">' + safe(data.place) + '</td>'
           }
           if(isBookmarked(data.name, dirtySettings)) {
             //html += '<td class="text-center" scope="row">' + safe(data.place) + '</td>'
-            html += '<td class="">' + safe(data.name) + '<a href="#" title="Avmarkera" class="pl-1 link" onclick="toggleBookmark(\'' + safe(data.name) + '\', this);return false;">' + safe(generateFavoriteSVG(true)) + '</a>'
+            html += '<td class="font-weight-bold">' + safe(data.name) + '<a href="#" title="Avmarkera" class="pl-1 link" onclick="toggleBookmark(\'' + safe(data.name) + '\', this);return false;">' + safe(generateFavoriteSVG(true)) + '</a>'
           } else {
-            html += '<td class="">' + safe(data.name) + '<a href="#" title="Bokmärk" class="pl-1 link" onclick="toggleBookmark(\'' + safe(data.name) + '\', this);return false;">' + safe(generateFavoriteSVG(false)) + '</a>'
+            html += '<td class="font-weight-bold">' + safe(data.name) + '<a href="#" title="Bokmärk" class="pl-1 link" onclick="toggleBookmark(\'' + safe(data.name) + '\', this);return false;">' + safe(generateFavoriteSVG(false)) + '</a>'
           }
           html += '<br><a href="#" title="Visa klubbresultat" class="small text-warning" onclick="getClubResult(\'' + competitionId + '\',\'' + safe(data.club) + '\')">' + safe(data.club) + '</a></td>'
             html += '<td class="small text-center">' + moment(data.start * 10).subtract(1,'hour').format("HH:mm:ss") + '</td>' // Summertime. What happens in wintertime??
@@ -586,18 +595,38 @@ let getClubResult = (competitionId, clubName) => {
       //debug("dirty: " + JSON.stringify(dirtySettings))
       clubResult.forEach((data, idx) => {
         html += '<tr>'
-          if(isBookmarked(data.name, dirtySettings)) {
-            html += '<td class="text-center" scope="row">' + safe(data.place) + '<br></td>'
-            html += '<td class="">' + safe(data.name) + '<a href="#" title="Avmarkera" class="pl-1 link" onclick="toggleBookmark(\'' + safe(data.name) + '\', this);return false;">' + generateFavoriteSVG(true) + '</a><br>'
+          //html += '<td class="text-center" scope="row">' + safe(data.place) + '<br></td>'
+
+          if(data.status === 9 || data.status === 10) {
+            html += '<td class="text-center" scope="row">' + notStartedSVG + '</td>'
+          } else if(data.status === 1) {
+            html += '<td class="text-center" scope="row">' + didNotStartSVG + '</td>'
+          } else if(data.status === 2) {
+            html += '<td class="text-center" scope="row">' + didNotFinishSVG + '</td>'
+          } else if(data.status === 3) {
+            html += '<td class="text-center" scope="row">' + missingPunchSVG + '</td>'
           } else {
-            html += '<td class="text-center" scope="row">' + safe(data.place) + '<br></td>'
-            html += '<td class="">' + safe(data.name) + '<a href="#" title="Bokmärk" class="pl-1 link" onclick="toggleBookmark(\'' + safe(data.name) + '\', this);return false;">' + generateFavoriteSVG(false) + '</a><br>'
+            html += '<td class="text-center" scope="row">' + safe(data.place) + '</td>'
+          }
+
+          if(isBookmarked(data.name, dirtySettings)) {
+            html += '<td class="font-weight-bold">' + safe(data.name) + '<a href="#" title="Avmarkera" class="pl-1 link" onclick="toggleBookmark(\'' + safe(data.name) + '\', this);return false;">' + generateFavoriteSVG(true) + '</a><br>'
+          } else {
+            html += '<td class="font-weight-bold">' + safe(data.name) + '<a href="#" title="Bokmärk" class="pl-1 link" onclick="toggleBookmark(\'' + safe(data.name) + '\', this);return false;">' + generateFavoriteSVG(false) + '</a><br>'
           }
           //html += '<td class="">' + data.name + '<span class="pl-1 link" onclick="toggleBookmark(\'' + data.name + '\', this);return false;">' + bookmarkSVG + '</span><br>'
           html += '<a href="#" title="Visa klassresultat" class="small text-warning" onclick="getClassResult(' + competitionId + ', \'' + safe(data.class) + '\')">' + safe(data.class) + '</a></td>'
           html += '<td class="small text-center"">' + moment(data.start * 10).subtract(1,'hour').format("hh:mm:ss") + '</td>' // Summertime. What happens in wintertime??
-          html += '<td class="small text-center"">' + safe(data.result) + '</td>'
-          html += '<td class="small text-center"">' + safe(data.timeplus) + '</td>'
+          
+          if(data.status !== 0) {
+            html += '<td class="small text-center" colspan="2">' + getStatus(data.status) + '</td>'
+          } else {
+            html += '<td class="small text-center">' + safe(data.result) + '</td>'
+            html += '<td class="small text-center">' + safe(data.timeplus) + '</td>'
+          }
+
+          //html += '<td class="small text-center"">' + safe(data.result) + '</td>'
+          //html += '<td class="small text-center"">' + safe(data.timeplus) + '</td>'
         html += '</tr><!-- ' + safe(data.status) + ', ' + safe(data.progress) + ' -->'
       });
 
@@ -714,7 +743,7 @@ let showCompetitionScreen = () => {
   $('#resultsLabel').addClass('disabled')
   $('#competitionsContainer').removeClass('d-none')
   $('#resultsContainer').addClass('d-none')
-  document.getElementById("resultRows").innerHTML = '<tr><td colpsan="5">Välj klass</td></tr>'
+  document.getElementById("resultRows").innerHTML = '<tr><td colspan="5">Välj klass</td></tr>'
 }
 let showResultScreen = (name) => {
   $('#competitonsLabel').removeClass('active')
