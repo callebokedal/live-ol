@@ -71,7 +71,7 @@
 		</div>
 		<!-- Settings end -->
 
-		<div class="container p-1" id="competitionsContainer">
+		<div class="container p-0" id="competitionsContainer">
 
 			<!-- Competitions -->
 			<!--<select class="form-control mr-5" id="dayLimit">
@@ -99,20 +99,20 @@
 
 		</div>
 
-		<div class="container p-1 d-none" id="resultsContainer">
+		<div class="container p-0 d-none" id="resultsContainer">
 
 			<h6 id="competitionName" class="d-flex flex-row-reverse p-1"></h6>
 
 			<!-- Last passings -->
 
 			<div class="d-flex">
-				<strong class="mb-1 flex-grow-1">Senaste passeringar</strong>
+				<strong class="mb-1 p-1 flex-grow-1">Senaste passeringar</strong>
 				<button type="button " class="btn btn-sm btn-light" id="lastPassingTimerToggler"></button>
 			</div>
 			<!--<div class="progress mb-1" style="height: 1px;">
 				<div id="lastPassingTimer" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
 			</div>-->
-			<ul class="list-group mb-2" id="passings">
+			<ul class="list-group p-1 mb-2" id="passings">
 				<div class="alert alert-primary m-3 d-flex justify-content-start flex-row align-items-center" role="alert">
 					<div class="spinner-border text-success" role="status">
 						<span class="sr-only">Laddar...</span>
@@ -123,8 +123,8 @@
 			<!-- Last passings end -->
 
 			<!-- Classes -->
-			<strong class="mb-1">Klasser</strong>
-			<div id="classes"></div>
+			<strong class="mb-1 p-1">Klasser</strong>
+			<div id="classes p-1"></div>
 			<!-- Classes -->
 
 			<!-- Results -->
@@ -132,7 +132,7 @@
 				<input type="checkbox" class="custom-control-input" id="onlyPersonFavorites">
 				<label class="custom-control-label" for="onlyPersonFavorites">Endast favoriter</label>
 			</div>-->
-			<div class="d-flex">
+			<div class="d-flex p-1">
 				<strong class="mb-1 flex-grow-1" id="resultLabel">Resultat</strong>
 				<button type="button" class="btn btn-sm" id="resultTimerToggler" onclick="togglerResultTimer();return false;"></button>
 			</div>
