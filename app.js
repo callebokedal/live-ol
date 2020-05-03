@@ -174,7 +174,7 @@ let filterCompetitions = (competitions, settings) => {
 }
 
 let debug = (str) => {
-  //console.log(str)
+  console.log(str)
 }
 
 let saveCompetitionsListCache = (data) => {
@@ -545,7 +545,7 @@ let getClassResult = (competitionId, className) => {
             html += '<td class="small text-center">' + moment(data.start * 10).subtract(1,'hour').format("HH:mm:ss") + '</td>' // Summertime. What happens in wintertime??
           //if(data.status === 9 || data.status === 10) {
           if(data.status !== 0) {
-            html += '<td class="small text-center" colspan="2">' + getStatus(data.status) + ' - ' + safe(data.status) + ', ' + safe(data.progress) + '</td>'
+            html += '<td class="small text-center" colspan="2">' + getStatus(data.status) + '</td>'
           } else {
               html += '<td class="small text-center">' + safe(data.result) + '</td>'
             if(data.DT_RowClass === "new_result") {
