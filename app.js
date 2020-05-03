@@ -313,6 +313,8 @@ let getLastPassings = (competitionId) => {
     return
   }
 
+  startLastPassTimer(competitionId)
+
   // Fetch new data
   var xhr = new XMLHttpRequest();
   xhr.open("GET", "https://liveresultat.orientering.se/api.php?method=getlastpassings&comp=" + competitionId + "&last_hash=" + loadHash(hashKey));
@@ -765,7 +767,6 @@ let showResultScreen = (name) => {
   }*/
   document.getElementById("competitionName").innerHTML = safe(name)
 
-  startLastPassTimer()
 }
 
 let showCompetitionResults = (competitionId, competitionName) => {
@@ -776,16 +777,18 @@ let showCompetitionResults = (competitionId, competitionName) => {
   showResultScreen(competitionName)
   getClasses(competitionId)
   getLastPassings(competitionId)
+  //startLastPassTimer(competitionId)
 }
 
 const timerTTL = 15000 // 15 seconds according to the API
 let lastPassTimerStartTime
 let lastPassTimer
-let startLastPassTimer = () => {
+let startLastPassTimer = (competitionId) => {
+  debug("start timer: " + competitionId)
   //document.getElementById("resultTimerToggler").innerHTML = timerOnSVG
   document.getElementById("lastPassingTimer").style='width: 0%;'
   lastPassTimerStartTime = Date.now()
-  lastPassTimer = setInterval(tickLastPassTimer, 500)
+  lastPassTimer = setInterval(tickLastPassTimer(competitionId), 500)
 }
 let stopLastPassTimer = () => {
   //document.getElementById("resultTimerToggler").innerHTML = timerOffSVG
@@ -793,16 +796,20 @@ let stopLastPassTimer = () => {
   lastPassTimerStartTime = Date.now()
   clearInterval(lastPassTimer)
 }
-let tickLastPassTimer = () => {
+let tickLastPassTimer = (competitionId) => {
+  debug("timer: " + competitionId)
   let now = Date.now()
+  debug(now)
+  debug(lastPassTimerStartTime)
+  debug(timerTTL)
   document.getElementById("lastPassingTimer").style='width: ' + Math.round(((now - lastPassTimerStartTime)/timerTTL)*100) + '%;'
   //debug(Math.round(((now - resultTimerStartTime)/timerTTL)*100))
   //debug(now - resultTimerStartTime)
   if(now - lastPassTimerStartTime > timerTTL) {
     //stopResultTimer()
     // Update and restart
-    getLastPassings()
-    startLastPassTimer()
+    //getLastPassings(competitionId)
+    startLastPassTimer(competitionId)
   }
 }
 
