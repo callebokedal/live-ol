@@ -53,7 +53,7 @@ let saveHash = (key, value) => {
   hashCache.set(key, value)
 }
 
-// Results are cached - we need to stor local copy
+// Results are cached - we need to store local copy
 const resultCache = new Map();
 let loadResult = (key) => {
   if(resultCache.has(key)) {
@@ -750,6 +750,7 @@ let showCompetitionScreen = () => {
   $('#competitionsContainer').removeClass('d-none')
   $('#resultsContainer').addClass('d-none')
   document.getElementById("resultRows").innerHTML = '<tr><td colspan="5">Välj klass</td></tr>'
+  stopLastPassTimer()
 }
 let showResultScreen = (name) => {
   $('#competitonsLabel').removeClass('active')
@@ -763,6 +764,8 @@ let showResultScreen = (name) => {
     $('#onlyPersonFavorites')[0].checked = false
   }*/
   document.getElementById("competitionName").innerHTML = safe(name)
+
+  startLastPassTimer()
 }
 
 let showCompetitionResults = (competitionId, competitionName) => {
@@ -776,6 +779,33 @@ let showCompetitionResults = (competitionId, competitionName) => {
 }
 
 const timerTTL = 15000 // 15 seconds according to the API
+let lastPassTimerStartTime
+let lastPassTimer
+let startLastPassTimer = () => {
+  //document.getElementById("resultTimerToggler").innerHTML = timerOnSVG
+  document.getElementById("lastPassingTimer").style='width: 0%;'
+  lastPassTimerStartTime = Date.now()
+  lastPassTimer = setInterval(tickLastPassTimer, 500)
+}
+let stopLastPassTimer = () => {
+  //document.getElementById("resultTimerToggler").innerHTML = timerOffSVG
+  document.getElementById("lastPassingTimer").style='width: 0%;'
+  lastPassTimerStartTime = Date.now()
+  clearInterval(lastPassTimer)
+}
+let tickLastPassTimer = () => {
+  let now = Date.now()
+  document.getElementById("lastPassingTimer").style='width: ' + Math.round(((now - lastPassTimerStartTime)/timerTTL)*100) + '%;'
+  //debug(Math.round(((now - resultTimerStartTime)/timerTTL)*100))
+  //debug(now - resultTimerStartTime)
+  if(now - lastPassTimerStartTime > timerTTL) {
+    //stopResultTimer()
+    // Update and restart
+    getLastPassings()
+    startLastPassTimer()
+  }
+}
+
 let resultTimerStartTime
 let resultTimer
 let startResultTimer = () => {
@@ -812,11 +842,24 @@ let togglerResultTimer = () => {
   saveSettings(settings)
 }
 
+let loadStateFromURL = () => {
+  //if(!Number.isNaN(Number.parseInt(document.location.hash.replace('#cid=','')))) {
+  //  currentCompetition = Number.parseInt(document.location.hash.replace('#cid=',''))
+
+}
+
+// Update state with 'update'
+let updateState = (update) => {
+  debug("update hash: " + state + " with: " + update)
+}
+
 // EVENT LISTENERS 
 $( document ).ready(function() {
   debug( "ready!" );
 
   document.getElementById("appLabel").innerHTML = 'Live-OL Results (v' + version + ')'
+
+  // Load state from URL
 
   //$("#logo").replaceWith(logoSVG)
 
@@ -827,18 +870,22 @@ $( document ).ready(function() {
   //if(!Number.isNaN(Number.parseInt(document.location.hash.replace('#cid=','')))) {
   //  currentCompetition = Number.parseInt(document.location.hash.replace('#cid=',''))
 
+  //startLastPassTimer()
+
     /*if(settings.resultTimer) {
       startResultTimer()
     } else {
       stopResultTimer()
     }
 */
-/*
-    if(settings.lastPassingTimer) {
+
+    /*if(settings.lastPassingTimer) {
       document.getElementById("lastPassingTimerToggler").innerHTML = timerOffSVG
     } else {
       document.getElementById("lastPassingTimerToggler").innerHTML = timerOffSVG
-    }
+    }*/
+
+    /*
     if(settings.resultTimer) {
       document.getElementById("resultTimerToggler").innerHTML = timerOffSVG
     } else {
@@ -871,6 +918,12 @@ $( document ).ready(function() {
     }
     getCompetitions()
   })
+
+  /*window.addEventListener('hashchange', function() {
+    //updateState(currentState)
+    //debug(location.hash)
+    updateState(location.hash)
+  }, false);*/
 
 /*
   $('#resultTimerToggler').click(function (e) {
