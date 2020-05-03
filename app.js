@@ -520,6 +520,8 @@ let getClassResult = (competitionId, className) => {
 // 11 - Walk Over (Resigned before the race started) --> 
 // 12 - Moved up (The runner have been moved to a higher class) --> 
 
+        // DT_RowClass: "new_result"
+
         // {"place":"3","name":"Leif Orienterare","club":"Sjövalla FK","result":"38:11","status":0,"timeplus":"+05:41","progress":100,"start":3716900}
         html += '<tr>'
           if(data.status === 9 || data.status === 10) {
@@ -543,10 +545,14 @@ let getClassResult = (competitionId, className) => {
             html += '<td class="small text-center">' + moment(data.start * 10).subtract(1,'hour').format("HH:mm:ss") + '</td>' // Summertime. What happens in wintertime??
           //if(data.status === 9 || data.status === 10) {
           if(data.status !== 0) {
-            html += '<td class="small text-center" colspan="2">' + getStatus(data.status) + '</td>'
+            html += '<td class="small text-center" colspan="2">' + getStatus(data.status) + ' - ' + safe(data.status) + ', ' + safe(data.progress) + '</td>'
           } else {
-            html += '<td class="small text-center">' + safe(data.result) + '</td>'
-            html += '<td class="small text-center">' + safe(data.timeplus) + '</td>'
+              html += '<td class="small text-center">' + safe(data.result) + '</td>'
+            if(data.DT_RowClass === "new_result") {
+              html += '<td class="small text-center">' + safe(data.timeplus) + '<br><span class="badge badge-light">Ny</span></td>' 
+            } else {
+              html += '<td class="small text-center">' + safe(data.timeplus) + '</td>' 
+            }
           }
         html += '</tr><!-- ' + safe(data.status) + ', ' + safe(data.progress) + ' -->'
       });
