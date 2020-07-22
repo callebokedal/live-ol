@@ -4,7 +4,7 @@
 moment().format()
 moment.locale('sv');
 
-const version = "1.4.1";
+const version = "1.4.2";
 
 const dp = DOMPurify;
 var dp_config = {
@@ -30,7 +30,8 @@ const defaultSettings = {
   "favoriteOrganizors": ["Sjövalla FK"],
   "bookmarks": [],
   "lastPassingTimer": false,
-  "resultTimer": true
+  "resultTimer": true,
+  "currentCompetition": ""
 //  "viewState": ScreenState.competitionsAll,
 //  "currentCompetition": null,
 //  "currentClassResult": null,
@@ -195,14 +196,146 @@ let getCompetitionsListCache = (settings) => {
   let secondsSinceLastFetch = moment().diff(cachedCompetitionsTimestamp,'seconds');
   //debug("secondsSinceLastFetch: " + secondsSinceLastFetch)
 
-  let cachedCompetitions = {}
+  let cachedCompetitions = []
   //debug("settings.competitionCacheTTL: " + settings.competitionCacheTTL)
   if(secondsSinceLastFetch <= settings.competitionCacheTTL) {
     // Return cached list
-    cachedCompetitions = localStorage.getItem("cachedCompetitions") ? JSON.parse(localStorage.getItem("cachedCompetitions")) : {};
+    // cachedCompetitions = localStorage.getItem("cachedCompetitions") ? JSON.parse(localStorage.getItem("cachedCompetitions")) : {};
+    cachedCompetitions = localStorage.getItem("cachedCompetitions") ? JSON.parse(localStorage.getItem("cachedCompetitions")) : [];
   }
   return cachedCompetitions
 }
+
+/*
+
+    let _getCheckLists = (boardId) => {
+      return new Promise((resolve, reject) => {
+
+        //console.log("_getCheckLists: " + boardId)
+
+        var xhr = new XMLHttpRequest();
+        xhr.addEventListener("loadend", function() {
+          if (xhr.status === 401) {
+            console.log("Unauthorized")
+            reject(xhr.status + " " + xhr.statusText + ": " + xhr.response);
+          } else if (xhr.status === 200) {
+            let json = JSON.parse(xhr.response);
+
+            json.forEach((checklist, idx) => {
+              boardData.checklists.push(checklist)
+            });
+            resolve();
+          }
+        });
+
+        xhr.open("GET", "https://api.trello.com/1/boards/" + boardId + "/checklists?key=" + getAPIKey() + "&token=" + getToken());
+        xhr.send(null); 
+      });
+    }
+*/
+
+let _getCompetitionList = (cid) => {
+  return new Promise((resolve, reject) => {
+
+    var xhr = new XMLHttpRequest();
+
+    xhr.addEventListener("loadend", function() {
+      var json = JSON.parse(xhr.response);
+      if (xhr.status === 401) {
+        reject("Can't access competitions")
+      } else if (xhr.status === 200 && json.competitions) {
+        //debug("competitions: " + JSON.stringify(json))
+        let competitions = json.competitions;
+        if(competitions.some( el => el.id == cid)) {
+          let competition = competitions.find( el => el.id == cid )
+          if(competition !== undefined) {
+            //debug("resolve: " + competition.name)
+            resolve(competition.name)
+          } else {
+            //debug("reject - no hit")
+            reject("No hit!") // Impossible case?
+          }
+        } else {
+          //debug("reject - okänt namn")
+          resolve("Okänt namn")
+        }
+      } else {
+        //debug("reject - no response")
+        reject("No response!")
+      }
+    });
+
+    xhr.open("GET", "https://liveresultat.orientering.se/api.php?method=getcompetitions");
+    xhr.send(null);
+  });
+}
+
+// Since cid can be sent via URL, we need to ba able to get name (LiveResults API does not support this!?)
+let getCompetitionNameById = (cid) => {
+
+    let settings = loadSettings(defaultSettings)
+    debug("getCompetitionNameById") // + JSON.stringify(settings));
+
+    // Try 1
+
+    //let settings = loadSettings(defaultSettings)
+    //let competitions = []
+    let cachedCompetitions = getCompetitionsListCache(settings) // [{"id":17609,"name":"KOL-MILA Sträcka 5","organizer":"Köping-Kolsva OK","date":"2020-07-22","timediff":0},{"id":176 ...
+
+    //debug(cachedCompetitions)
+
+    if(cachedCompetitions.some( el => el.id == cid)) {
+
+      // Find by Id
+      let competition = cachedCompetitions.find( el => el.id == cid ) // [{"id":17609,"name":"KOL-MILA Sträcka 5","organizer":"Köping-Kolsva OK","date":"2020-07-22","timediff":0},{"id":176 ...
+      if(competition !== undefined) {
+        return competition.name
+      }
+    } 
+
+    // Try 2
+    // Fetch new data
+//    let compList = _getCompetitionList(cid)
+//    debug("compList: ")
+//    debug(JSON.stringify(compList))
+//    //let name = "..."
+//    compList.then(
+//      successValue => {debug("Success: " + successValue); settings.competitonName = successValue},
+//      errorValue => {debug("Error")})
+
+    Promise.all([
+        _getCompetitionList(cid)
+      ]).then((value) => {
+        //debug("done: " + value)
+        settings.competitonName = value
+
+        document.getElementById("competitionName").innerHTML = safe(value)
+        return value
+      }).catch(function(msg) {
+        //debug('Failed to load competition name - no match found');
+        //debug(msg)
+
+        document.getElementById("competitionName").innerHTML = safe("Okänt namn")
+      })
+      /*
+    Promise.all([
+        _getBoards()
+      ]).then(() => {
+        _generateStartHTML()
+      }).catch(function(msg) {
+        console.log('Failed to load data from Trello:');
+        console.log(msg)
+        document.getElementById("startContainer").innerHTML = renewHTML
+      })
+*/
+
+    //return name
+    //debug("at end: " + settings.competitonName)
+    //return settings.name
+
+    // Find by Id
+    //return "Okänt namn"
+};
 
 let generateFavoriteSVG = (isFavorite) => {
   let html = ''
@@ -305,7 +438,7 @@ let generateCompetitionsList = (data) => {
 
 // api.php?method=getclasses&comp=XXXX&last_hash=abcdefg
 let getLastPassings = (competitionId) => {
-  debug("get results")
+  //debug("get results")
   let hashKey = "pass"+competitionId
 
   if(!Number.isInteger(competitionId)) {
@@ -334,8 +467,8 @@ let getLastPassings = (competitionId) => {
       let passings = json.passings;
       saveHash("pass"+competitionId, json.hash);
 
-      debug(passings)
-      debug(loadHash("pass"+competitionId))
+      //debug(passings)
+      //debug(loadHash("pass"+competitionId))
 
       let html = ""
 
@@ -477,8 +610,15 @@ let getStatus = (code) => {
 
 // api.php?comp=10259&method=getclassresults&includetotal=true&unformattedTimes=true&class=Öppen-1
 let getClassResult = (competitionId, className) => {
+  className = decodeURIComponent(className)
   $("#resultLabel")[0].innerHTML = "Resultat - " + className
   debug("get classresult: " + competitionId + ", " + className)
+
+  // Update URL/navigation
+  debug("hash to set for class: " + "#cid=" + competitionId + "&class=" + encodeURIComponent(className))
+  history.pushState({"view": VIEWS.OVERVIEW}, "", "#cid=" + competitionId + "&class=" + encodeURIComponent(className))
+  // history.pushState({page: 1}, "title 1", "?page=1")
+
   let hashKey = "className"+competitionId+className
   activateClassButtons(className)
 
@@ -504,7 +644,7 @@ let getClassResult = (competitionId, className) => {
       let classResult = json.results;
       saveHash(hashKey, json.hash);
 
-      debug(classResult)
+      //debug(classResult)
 
       let html = ""
       let dirtySettings = loadSettings()
@@ -543,7 +683,7 @@ let getClassResult = (competitionId, className) => {
           } else {
             html += '<td class="font-weight-bold">' + safe(data.name) + '<a href="#" title="Bokmärk" class="pl-1 link" onclick="toggleBookmark(\'' + safe(data.name) + '\', this);return false;">' + safe(generateFavoriteSVG(false)) + '</a>'
           }
-          html += '<br><a href="#" title="Visa klubbresultat" class="small text-warning" onclick="getClubResult(\'' + competitionId + '\',\'' + safe(data.club) + '\')">' + safe(data.club) + '</a></td>'
+          html += '<br><a href="#" title="Visa klubbresultat" class="small text-warning" onclick="getClubResult(\'' + competitionId + '\',\'' + safe(data.club) + '\');return false;">' + safe(data.club) + '</a></td>'
             html += '<td class="small text-center">' + moment(data.start * 10).subtract(1,'hour').format("HH:mm:ss") + '</td>' // Summertime. What happens in wintertime??
           //if(data.status === 9 || data.status === 10) {
           if(data.status !== 0) {
@@ -569,8 +709,15 @@ let getClassResult = (competitionId, className) => {
 
 // api.php?comp=10259&method=getcclubresults&unformattedTimes=true&club=Klyftamo
 let getClubResult = (competitionId, clubName) => {
+  clubName = decodeURIComponent(clubName)
+
   $("#resultLabel")[0].innerHTML = "Resultat - " + safe(clubName)
   debug("get clubresult: " + competitionId + ", " + clubName)
+
+  // Update URL
+  debug("hash to set for club: " + "#cid=" + competitionId + "&class=" + encodeURIComponent(clubName))
+  history.pushState({"view": VIEWS.OVERVIEW}, "", "#cid=" + competitionId + "&clubName=" + encodeURIComponent(clubName))
+
   let hashKey = "clubName"+competitionId+clubName
   activateClassButtons(clubName)
 
@@ -596,7 +743,7 @@ let getClubResult = (competitionId, clubName) => {
         return ap - bp;
       });
 
-      debug(clubResult)
+      //debug(clubResult)
 
       let html = ""
       let dirtySettings = loadSettings()
@@ -623,7 +770,7 @@ let getClubResult = (competitionId, clubName) => {
             html += '<td class="font-weight-bold">' + safe(data.name) + '<a href="#" title="Bokmärk" class="pl-1 link" onclick="toggleBookmark(\'' + safe(data.name) + '\', this);return false;">' + generateFavoriteSVG(false) + '</a><br>'
           }
           //html += '<td class="">' + data.name + '<span class="pl-1 link" onclick="toggleBookmark(\'' + data.name + '\', this);return false;">' + bookmarkSVG + '</span><br>'
-          html += '<a href="#" title="Visa klassresultat" class="small text-warning" onclick="getClassResult(' + competitionId + ', \'' + safe(data.class) + '\')">' + safe(data.class) + '</a></td>'
+          html += '<a href="#" title="Visa klassresultat" class="small text-warning" onclick="getClassResult(' + competitionId + ', \'' + safe(data.class) + '\');return false;">' + safe(data.class) + '</a></td>'
           html += '<td class="small text-center"">' + moment(data.start * 10).subtract(1,'hour').format("hh:mm:ss") + '</td>' // Summertime. What happens in wintertime??
           
           if(data.status !== 0) {
@@ -732,10 +879,12 @@ let removeFavoriteOrganizer = (organizerName) => {
 let loadSettings = () => {
   //debug("loadSettings - defaultSettings: " + JSON.stringify(defaultSettings));
   let settings = localStorage.getItem("settings") ? JSON.parse(localStorage.getItem("settings")) : defaultSettings;
-  debug("load settings: " + JSON.stringify(settings))
+  //debug("load settings: " + JSON.stringify(settings))
   if(settings.version !== version) {
     debug("Version diff: " + settings.version + " is not: " + version)
   }
+  // http://localhost:8000/#cid=17618&class=Mkt%20l%C3%A4tt%202%20km
+  //        localhost:8000/#cid=17618&class=Mkt lätt 2 km455
   return settings;
 }
 
@@ -753,6 +902,10 @@ let showCompetitionScreen = () => {
   $('#resultsContainer').addClass('d-none')
   document.getElementById("resultRows").innerHTML = '<tr><td colspan="5">Välj klass</td></tr>'
   stopLastPassTimer()
+  //generateCompetitionsList()
+  debug("location.hash: " + location.hash)
+  history.pushState({"view": VIEWS.OVERVIEW}, "")
+  getCompetitions()
 }
 let showResultScreen = (name) => {
   $('#competitonsLabel').removeClass('active')
@@ -766,14 +919,21 @@ let showResultScreen = (name) => {
     $('#onlyPersonFavorites')[0].checked = false
   }*/
   document.getElementById("competitionName").innerHTML = safe(name)
-
+  // startResultTimer() // TODO
 }
+
 
 let showCompetitionResults = (competitionId, competitionName) => {
   debug("hello: " + competitionName)
-  if(typeof competitionName === 'undefined') {
-    competitionName = data.name
-  }
+
+  // Save competition id
+  settings.currentCompetition = competitionId
+  history.pushState({"view": VIEWS.RESULT, "competitionId": competitionId}, "")
+
+  //if(typeof competitionName === 'undefined') {
+  //  competitionName = data.name
+  //}
+
   showResultScreen(competitionName)
   getClasses(competitionId)
   getLastPassings(competitionId)
@@ -849,19 +1009,66 @@ let togglerResultTimer = () => {
   saveSettings(settings)
 }
 
-let loadStateFromURL = () => {
-  //if(!Number.isNaN(Number.parseInt(document.location.hash.replace('#cid=','')))) {
-  //  currentCompetition = Number.parseInt(document.location.hash.replace('#cid=',''))
-
+// Utility function to get id for key in hash
+// Ex: getHashIdValue("cid") for ...#cid=123&foo=abc -> 123
+let getHashIdValue = (key) => {
+  let matches = location.hash.match(new RegExp(key+'=([^&]*)'));
+  return matches ? safe(matches[1]) : null;
 }
 
-// Update state with 'update'
+//let loadStateFromURL = () => {
+//}
+
+/*// Update state with 'update'
 let updateState = (update) => {
   debug("update hash: " + state + " with: " + update)
+}*/
+
+const VIEWS = {
+  OVERVIEW: "overview", // Competition view
+  RESULT: "result", // Result for a competition
+  SETTINGS: "settings"  // Settings
 }
+
+// State controller
+let state = {
+  _view: VIEWS.OVERVIEW,
+  _data: "",
+  toggleView: (view, data) => {
+    if (view == VIEWS.SETTINGS) {
+      state._viewSettings(data);
+    } else if (view == VIEWS.RESULT) {
+      state._viewResults(data);
+    } else {
+      // Assume competitions overview
+      state._viewOverview(data);
+    }
+  },
+  _viewOverview: (data) => {
+    getCompetitions();
+  },
+  _viewResults: (data) => {
+    debug("_viewResults")
+      if(data) {
+        debug("data: " )
+        debug(data)
+        if(data.competitionId) {
+          //showCompetitionResults(data.competitionId, data.competitionName)
+          showCompetitionResults(data.competitionId, data.competitionName)
+        }
+      } 
+  },
+  _viewSettings: (data) => {
+    getCompetitions()
+  }
+}
+
 
 // EVENT LISTENERS 
 $( document ).ready(function() {
+
+  // ------------------ Initial setup start -----------------------------------
+
   debug( "ready!" );
 
   document.getElementById("appLabel").innerHTML = 'Live-OL Results (v' + version + ')'
@@ -872,7 +1079,56 @@ $( document ).ready(function() {
 
   // Get recent competitions
   //$('#onlyOrganizerFavorites')[0].checked
+
+
+  // Load settings
   let settings = loadSettings()
+
+  // Update page according to settings
+  if(settings.onlyClubFavorites) {
+    $('#onlyOrganizerFavorites')[0].checked = true
+  }
+
+  // Add settings from input/URL
+  if( document.location.hash ) {
+    let cid = getHashIdValue("cid")
+    debug("hash is something: " + cid)
+    if(cid != null) {
+      // Display competition
+      settings.competitionId = parseInt(cid);
+      settings.competitionName = getCompetitionNameById(cid) // "Test" // TODO
+      state.toggleView(VIEWS.RESULT, settings);
+
+      // Load class result if applicable
+      let className = getHashIdValue("class")
+      if(className != null) {
+        //debug("hash class is something: " + className)
+        getClassResult(parseInt(cid), className)
+        setTimeout(function() {activateClassButtons(className)}, 300) // Ugly fix
+        //setTimeout(alert(className), 3000) // Ugly fix
+      }
+
+      // Load club result if applicable
+      let clubName = getHashIdValue("clubName")
+      if(clubName != null) {
+        //debug("hash club is something: " + clubName)
+        getClubResult(parseInt(cid), clubName)
+      }
+    }
+
+  } else {
+    state.toggleView(VIEWS.OVERVIEW);
+  }
+
+
+  // Save updated settings
+  // Skip?
+
+  // View page according to settings
+  // getCompetitions()
+
+
+
   //let currentCompetition = -1
   //if(!Number.isNaN(Number.parseInt(document.location.hash.replace('#cid=','')))) {
   //  currentCompetition = Number.parseInt(document.location.hash.replace('#cid=',''))
@@ -903,12 +1159,9 @@ $( document ).ready(function() {
     //showCompetitionResults(currentCompetition)
 
   //} else {
-    if(settings.onlyClubFavorites) {
-      $('#onlyOrganizerFavorites')[0].checked = true
-    }
-    getCompetitions()
   //}
 
+  // --------------- Event handlers start -------------------------------------
   $('#settingsBackdrop').on('show.bs.modal', function (e) {
     //debug("Settings show")
     generateSettingsList()
@@ -925,6 +1178,25 @@ $( document ).ready(function() {
     }
     getCompetitions()
   })
+
+
+  window.addEventListener('hashchange', function() {
+    debug('The hash has changed!')
+    debug(location.hash)
+
+    let settings = loadSettings()
+    let tmpCompetitionId = getHashIdValue("cid")
+    if(tmpCompetitionId != settings.competitionId) {
+      settings.competitionId = parseInt(tmpCompetitionId);
+      saveSettings(settings);
+      //let state = { "competitionId": competitionId}
+      //history.pushState(state, "")
+      //debug(state)
+    }
+  }, false);
+  // --------------- Event handlers end -------------------------------------
+
+  // ------------------ Initial setup end -------------------------------------
 
   /*window.addEventListener('hashchange', function() {
     //updateState(currentState)
