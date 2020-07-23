@@ -365,7 +365,7 @@ let generateCompetitionsList = (data) => {
 
 // api.php?method=getclasses&comp=XXXX&last_hash=abcdefg
 let getLastPassings = (competitionId) => {
-  debug("getLastPassings")
+  //debug("getLastPassings")
   let hashKey = "pass"+competitionId
 
   if(!Number.isInteger(competitionId)) {
@@ -414,7 +414,7 @@ let getLastPassings = (competitionId) => {
         });
       }
       document.getElementById("passings").innerHTML = html;
-      debug("last passings updated")
+      //debug("last passings updated")
     } else {
       console.log("No response!")
     }
@@ -906,7 +906,7 @@ let tickLastPassTimer = (competitionId) => {
     //debug(timerTTL)
     let timerElement = document.getElementById("lastPassingTimer")
     timerElement.style='width: ' + Math.round(((now - lastPassTimerStartTime)/timerTTL)*100) + '%;'
-    document.getElementById("lastPassingsTitle").innerHTML = "(Uppdateras om " + Math.round((timerTTL - (now - lastPassTimerStartTime))/1000) + " sekunder)"
+    document.getElementById("lastPassingsTitle").innerHTML = "(Uppdateras om " + Math.round((timerTTL - (now - lastPassTimerStartTime))/1000) + " s)"
     //debug(Math.round(((now - resultTimerStartTime)/timerTTL)*100))
     //debug(now - resultTimerStartTime)
     //debug("timer test: " + ((now - lastPassTimerStartTime > timerTTL)))
