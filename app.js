@@ -4,7 +4,7 @@
 moment().format()
 moment.locale('sv');
 
-const version = "1.4.2";
+const version = "1.4.3";
 
 const dp = DOMPurify;
 var dp_config = {
@@ -32,12 +32,7 @@ const defaultSettings = {
   "lastPassingTimer": false,
   "resultTimer": true,
   "currentCompetition": ""
-//  "viewState": ScreenState.competitionsAll,
-//  "currentCompetition": null,
-//  "currentClassResult": null,
-//  "currentClubResult": null
 }
-//let settings
 
 const hashCache = new Map();
 let loadHash = (key) => {
@@ -66,49 +61,6 @@ let loadResult = (key) => {
 let saveResult = (key, data) => {
   resultCache.set(key,data)
 }
-
-// api.php?method=getcompetitioninfo&comp=xxx
-/*getCompetitionInfo = (compId) => {
-//{ "id" : 10278, 
-//"name" : "Demo #1", 
-//"organizer" : "TestOrganizer", 
-//"date" : "2012-06-01",
-//"timediff" : 0,
-//"multidaystage" : 1,
-//"multidayfirstday" : 10278
-//}
-
-
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", "https://liveresultat.orientering.se/api.php?method=getcompetitioninfo&comp=" + safe(compId));
-    xhr.send(null);
-    let result = "{a}"
-
-    xhr.addEventListener("loadend", function() {
-      var json = JSON.parse(xhr.response);
-      if (xhr.status === 401) {
-        console.log("Can't access competition")
-      } else if (xhr.status === 200) {
-        debug("competition: " + JSON.stringify(json))
-
-        // {"id":17289,"name":"Sjövalla FK Påsk-Cup E4","organizer":"Sjövalla FK","date":"2020-04-13","timediff":0,"timezone":"","isPublic":1}
-
-        //competition = json.competition;
-
-        //let filtered = filterCompetitions(competitions, settings)
-
-        //saveCompetitionsListCache(filtered)
-        //generateCompetitionsList(filtered)
-        result = JSON.stringify(json)
-      } else {
-        console.log("No response!!")
-        //return {}
-      }
-    });
-
-    debug("return " + result)
-    return result
-}*/
 
 // api.php?method=getcompetitions
 let getCompetitions = () => {
@@ -295,13 +247,6 @@ let getCompetitionNameById = (cid) => {
 
     // Try 2
     // Fetch new data
-//    let compList = _getCompetitionList(cid)
-//    debug("compList: ")
-//    debug(JSON.stringify(compList))
-//    //let name = "..."
-//    compList.then(
-//      successValue => {debug("Success: " + successValue); settings.competitonName = successValue},
-//      errorValue => {debug("Error")})
 
     Promise.all([
         _getCompetitionList(cid)
@@ -317,24 +262,6 @@ let getCompetitionNameById = (cid) => {
 
         document.getElementById("competitionName").innerHTML = safe("Okänt namn")
       })
-      /*
-    Promise.all([
-        _getBoards()
-      ]).then(() => {
-        _generateStartHTML()
-      }).catch(function(msg) {
-        console.log('Failed to load data from Trello:');
-        console.log(msg)
-        document.getElementById("startContainer").innerHTML = renewHTML
-      })
-*/
-
-    //return name
-    //debug("at end: " + settings.competitonName)
-    //return settings.name
-
-    // Find by Id
-    //return "Okänt namn"
 };
 
 let generateFavoriteSVG = (isFavorite) => {
@@ -438,7 +365,7 @@ let generateCompetitionsList = (data) => {
 
 // api.php?method=getclasses&comp=XXXX&last_hash=abcdefg
 let getLastPassings = (competitionId) => {
-  //debug("get results")
+  debug("getLastPassings")
   let hashKey = "pass"+competitionId
 
   if(!Number.isInteger(competitionId)) {
@@ -487,6 +414,7 @@ let getLastPassings = (competitionId) => {
         });
       }
       document.getElementById("passings").innerHTML = html;
+      debug("last passings updated")
     } else {
       console.log("No response!")
     }
@@ -922,9 +850,8 @@ let showResultScreen = (name) => {
   // startResultTimer() // TODO
 }
 
-
 let showCompetitionResults = (competitionId, competitionName) => {
-  debug("hello: " + competitionName)
+  debug("hello: " + competitionId)
 
   // Save competition id
   settings.currentCompetition = competitionId
@@ -940,36 +867,60 @@ let showCompetitionResults = (competitionId, competitionName) => {
   //startLastPassTimer(competitionId)
 }
 
-const timerTTL = 15000 // 15 seconds according to the API
+const timerTTL = 15000 // 15 seconds according to API rules
 let lastPassTimerStartTime
 let lastPassTimer
 let startLastPassTimer = (competitionId) => {
-  debug("start timer: " + competitionId)
+  //debug("start timer: " + competitionId)
   //document.getElementById("resultTimerToggler").innerHTML = timerOnSVG
-  document.getElementById("lastPassingTimer").style='width: 0%;'
-  lastPassTimerStartTime = Date.now()
-  lastPassTimer = setInterval(tickLastPassTimer(competitionId), 500)
+  let timerElement = document.getElementById("lastPassingTimer")
+  //if(timerElement.)
+  if(!settings.lastPassingTimer) {
+    //debug("starting last pass timer: " + competitionId)
+    settings.lastPassingTimer = true
+    timerElement.style='width: 0%;'
+    lastPassTimerStartTime = Date.now()
+    //debug("here")
+    //lastPassTimer = setInterval(tickLastPassTimer, 500, competitionId) // Might not work in Safari? https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setInterval
+    lastPassTimer = setInterval(tickLastPassTimer.bind(null,competitionId), 1000) // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind
+    //lastPassTimer = setInterval(tickLastPassTimer(competitionId), 500)
+    //debug("lastPassTimer: " + lastPassTimer)
+  }
 }
 let stopLastPassTimer = () => {
   //document.getElementById("resultTimerToggler").innerHTML = timerOffSVG
-  document.getElementById("lastPassingTimer").style='width: 0%;'
+
+  let timerElement = document.getElementById("lastPassingTimer")
+  settings.lastPassingTimer = false
+  timerElement.style='width: 0%;'
   lastPassTimerStartTime = Date.now()
   clearInterval(lastPassTimer)
 }
 let tickLastPassTimer = (competitionId) => {
-  debug("timer: " + competitionId)
-  let now = Date.now()
-  debug(now)
-  debug(lastPassTimerStartTime)
-  debug(timerTTL)
-  document.getElementById("lastPassingTimer").style='width: ' + Math.round(((now - lastPassTimerStartTime)/timerTTL)*100) + '%;'
-  //debug(Math.round(((now - resultTimerStartTime)/timerTTL)*100))
-  //debug(now - resultTimerStartTime)
-  if(now - lastPassTimerStartTime > timerTTL) {
-    //stopResultTimer()
-    // Update and restart
-    //getLastPassings(competitionId)
-    startLastPassTimer(competitionId)
+  //debug("last passing timer: " + competitionId)
+
+  if(settings.lastPassingTimer) {
+    let now = Date.now()
+    //debug(now)
+    //debug(lastPassTimerStartTime)
+    //debug(timerTTL)
+    let timerElement = document.getElementById("lastPassingTimer")
+    timerElement.style='width: ' + Math.round(((now - lastPassTimerStartTime)/timerTTL)*100) + '%;'
+    document.getElementById("lastPassingsTitle").innerHTML = "(Uppdateras om " + Math.round((timerTTL - (now - lastPassTimerStartTime))/1000) + " sekunder)"
+    //debug(Math.round(((now - resultTimerStartTime)/timerTTL)*100))
+    //debug(now - resultTimerStartTime)
+    //debug("timer test: " + ((now - lastPassTimerStartTime > timerTTL)))
+    if(now - lastPassTimerStartTime > timerTTL) {
+      //stopResultTimer()
+      //debug("true in ticker")
+      timerElement.style='width: 100%;'
+      settings.lastPassingTimer = false
+      // Update and restart
+      getLastPassings(competitionId)
+      startLastPassTimer(competitionId)
+    } else {
+      //lastPassTimer = setTimeout(tickLastPassTimer(competitionId), 500)
+    }
   }
 }
 
@@ -1092,7 +1043,7 @@ $( document ).ready(function() {
   // Add settings from input/URL
   if( document.location.hash ) {
     let cid = getHashIdValue("cid")
-    debug("hash is something: " + cid)
+    //debug("hash is something: " + cid)
     if(cid != null) {
       // Display competition
       settings.competitionId = parseInt(cid);
@@ -1181,8 +1132,8 @@ $( document ).ready(function() {
 
 
   window.addEventListener('hashchange', function() {
-    debug('The hash has changed!')
-    debug(location.hash)
+    //debug('The hash has changed!')
+    //debug(location.hash)
 
     let settings = loadSettings()
     let tmpCompetitionId = getHashIdValue("cid")
