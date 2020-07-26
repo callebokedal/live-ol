@@ -82,7 +82,7 @@ let getCompetitions = () => {
     xhr.send(null);
 
     xhr.addEventListener("loadend", function() {
-      var json = JSON.parse(xhr.response);
+      var json = JSON.parse(xhr.response.replace(/\t/g, '')); // Work around: JSON.parse does not handle tab characters?
       if (xhr.status === 401) {
         console.log("Can't access competitions")
       } else if (xhr.status === 200 && json.competitions) {
