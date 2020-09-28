@@ -4,7 +4,7 @@
 moment().format()
 moment.locale('sv');
 
-const version = "1.4.3";
+const version = "1.4.5";
 
 const dp = DOMPurify;
 var dp_config = {
@@ -28,6 +28,7 @@ const defaultSettings = {
   "onlyClubFavorites": false,
   "onlyPersonFavorites": false,
   "favoriteOrganizors": ["Sjövalla FK"],
+  "filterOrganizors": [],
   "bookmarks": [],
   "lastPassingTimer": false,
   "resultTimer": true,
@@ -63,7 +64,7 @@ let saveResult = (key, data) => {
 }
 
 // api.php?method=getcompetitions
-let getCompetitions = () => {
+let getCompetitions = (scrollToY) => {
   debug("getCompetitions");
 
   let settings = loadSettings(defaultSettings)
@@ -96,6 +97,13 @@ let getCompetitions = () => {
       } else {
         console.log("No response!")
       }
+    });
+  }
+  if(scrollToY) {
+    // Scroll to Y
+    window.scrollTo({
+      top: scrollToY,
+      left: 0
     });
   }
 };
@@ -278,6 +286,26 @@ let generateFavoriteSVG = (isFavorite) => {
   return html
 }
 
+let generateFilterSVG = (isFiltered) => {
+  let html = ''
+  if(isFiltered) {
+    //html += '<svg class="bi bi-star-fill text-warning" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">'
+    //html += '<path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.283.95l-3.523 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>'
+    //html += '</svg>'
+    html += '<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-dash-circle-fill text-warning" fill="currentColor" xmlns="http://www.w3.org/2000/svg">'
+    html += '<path fill-rule="evenodd" d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM4.5 7.5a.5.5 0 0 0 0 1h7a.5.5 0 0 0 0-1h-7z"/>'
+    html += '</svg>'
+  } else {
+    html += '<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-dash-circle-fill text-secondary" fill="currentColor" xmlns="http://www.w3.org/2000/svg">'
+    html += '<path fill-rule="evenodd" d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM4.5 7.5a.5.5 0 0 0 0 1h7a.5.5 0 0 0 0-1h-7z"/>'
+    html += '</svg>'
+    //html += '<svg class="bi bi-star text-secondary" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">'
+    //html += '<path fill-rule="evenodd" d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.523-3.356c.329-.314.158-.888-.283-.95l-4.898-.696L8.465.792a.513.513 0 00-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767l-3.686 1.894.694-3.957a.565.565 0 00-.163-.505L1.71 6.745l4.052-.576a.525.525 0 00.393-.288l1.847-3.658 1.846 3.658a.525.525 0 00.393.288l4.052.575-2.906 2.77a.564.564 0 00-.163.506l.694 3.957-3.686-1.894a.503.503 0 00-.461 0z" clip-rule="evenodd"/>'
+    //html += '</svg>'
+  }
+  return html
+}
+
 // Stopwatch, Triangle, Watch, Diamond half
 // 0 - OK --> "Check box"
 // 1 - DNS (Did Not Start) --> didNotStartSVG 
@@ -344,13 +372,22 @@ let generateCompetitionsList = (data) => {
         html += '<div class="mb-1 d-flex">'
           html += '<small class="align-middle">' + safe(data.organizer) + '</small>'
           if(settings.favoriteOrganizors.indexOf(data.organizer) !== -1) {
-            html += '<a href="#" class="flex-grow-1 mr-1 ml-1 small" onclick="quickRemoveFavoriteOrganizer(\'' + safe(data.organizer) + '\')">' 
+            html += '<a href="#" class="flex-grow-1 mr-1 ml-1 small" onclick="quickRemoveFavoriteOrganizer(\'' + safe(data.organizer) + '\');return false;">' 
             html += generateFavoriteSVG(true)
           } else {
-            html += '<a href="#" class="flex-grow-1 mr-1 ml-1 small" onclick="quickAddFavoriteOrganizer(\'' + safe(data.organizer) + '\')">' 
+            html += '<a href="#" class="flex-grow-1 mr-1 ml-1 small" onclick="quickAddFavoriteOrganizer(\'' + safe(data.organizer) + '\');return false;">' 
             html += generateFavoriteSVG(false)
           }
           html += '</a>'
+          /*
+          if(settings.filterOrganizors.indexOf(data.organizer) !== -1) {
+            html += '<a href="#" class="flex-grow-1 mr-1 ml-1 small" onclick="quickRemoveFilterOrganizer(\'' + safe(data.organizer) + '\');return false;">' 
+            html += generateFilterSVG(true)
+          } else {
+            html += '<a href="#" class="flex-grow-1 mr-1 ml-1 small" onclick="quickAddFilterOrganizer(\'' + safe(data.organizer) + '\');return false;">' 
+            html += generateFilterSVG(false)
+          }
+          html += '</a>'*/
           html += '<small>' + safe(data.date) + ' ' +  moment(safe(data.date)).fromNow() + '</small>'
         html += '</div>'
         html += '<h6 class="d-flex align-items-end flex-column mb-1 mt-1 mr-1"><a href="#cid=' + safe(data.id) + '" onclick="showCompetitionResults(' + safe(data.id) + ', \'' + safe(data.name) + '\')" class="text-warning">' + safe(data.name) + '</a></h6>'
@@ -780,7 +817,7 @@ let quickAddFavoriteOrganizer = (organizerName) => {
   let settings = loadSettings()
   settings.favoriteOrganizors.push(organizerName)
   saveSettings(settings)
-  getCompetitions()
+  getCompetitions(window.scrollY)
 }
 let quickRemoveFavoriteOrganizer = (organizerName) => {
   let settings = loadSettings()
@@ -789,7 +826,25 @@ let quickRemoveFavoriteOrganizer = (organizerName) => {
     $('#onlyOrganizerFavorites')[0].checked = false
   }
   saveSettings(settings)
-  getCompetitions()
+  getCompetitions(window.scrollY)
+}
+
+
+// To be able to hide/filter some organizations
+let quickAddFilterOrganizer = (organizerName) => {
+  let settings = loadSettings()
+  settings.filterOrganizors.push(organizerName)
+  saveSettings(settings)
+  getCompetitions(window.scrollY)
+}
+let quickRemoveFilterOrganizer = (organizerName) => {
+  let settings = loadSettings()
+  settings.filterOrganizors = settings.filterOrganizors.filter(name => name !== organizerName)
+  /*if(settings.filterOrganizors.length == 0) {
+    $('#onlyOrganizerFavorites')[0].checked = false
+  }*/
+  saveSettings(settings)
+  getCompetitions(window.scrollY)
 }
 
 let removeFavoriteOrganizer = (organizerName) => {
