@@ -87,9 +87,8 @@ let getCompetitions = (scrollToY) => {
       if (xhr.status === 401) {
         console.log("Can't access competitions")
       } else if (xhr.status === 200 && json.competitions) {
-        debug("competitions: " + JSON.stringify(json))
-        competitions = json.competitions;
-
+        //debug("competitions: " + JSON.stringify(clean))
+        let competitions = json.competitions;
         let filtered = filterCompetitions(competitions, settings)
 
         saveCompetitionsListCache(filtered)
