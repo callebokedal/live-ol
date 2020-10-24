@@ -648,7 +648,7 @@ let getClassResult = (competitionId, className) => {
             html += '<td class="font-weight-bold">' + safe(data.name) + '<a href="#" title="Bokmärk" class="pl-1 link" onclick="toggleBookmark(\'' + safe(data.name) + '\', this);return false;">' + safe(generateFavoriteSVG(false)) + '</a>'
           }
           html += '<br><a href="#" title="Visa klubbresultat" class="small text-warning" onclick="getClubResult(\'' + competitionId + '\',\'' + safe(data.club) + '\');return false;">' + safe(data.club) + '</a></td>'
-            html += '<td class="small text-center">' + moment(data.start * 10).subtract(1,'hour').format("HH:mm:ss") + '</td>' // Summertime. What happens in wintertime??
+          html += '<td class="small text-center">' + moment(data.start * 10).subtract(1,'hour').format("HH:mm") + '</td>' // Summertime. What happens in wintertime??
           //if(data.status === 9 || data.status === 10) {
           if(data.status !== 0) {
             html += '<td class="small text-center" colspan="2">' + getStatus(data.status) + '</td>'
@@ -735,7 +735,7 @@ let getClubResult = (competitionId, clubName) => {
           }
           //html += '<td class="">' + data.name + '<span class="pl-1 link" onclick="toggleBookmark(\'' + data.name + '\', this);return false;">' + bookmarkSVG + '</span><br>'
           html += '<a href="#" title="Visa klassresultat" class="small text-warning" onclick="getClassResult(' + competitionId + ', \'' + safe(data.class) + '\');return false;">' + safe(data.class) + '</a></td>'
-          html += '<td class="small text-center"">' + moment(data.start * 10).subtract(1,'hour').format("hh:mm:ss") + '</td>' // Summertime. What happens in wintertime??
+          html += '<td class="small text-center"">' + moment(data.start * 10).subtract(1,'hour').format("hh:mm") + '</td>' // Summertime. What happens in wintertime??
           
           if(data.status !== 0) {
             html += '<td class="small text-center" colspan="2">' + getStatus(data.status) + '</td>'
