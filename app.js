@@ -31,7 +31,7 @@ const defaultSettings = {
   "filterOrganizors": [],
   "bookmarks": [],
   "lastPassingTimer": false,
-  "resultTimer": true,
+  "resultTimer": false,
   "currentCompetition": ""
 }
 
@@ -66,6 +66,7 @@ let saveResult = (key, data) => {
 // api.php?method=getcompetitions
 let getCompetitions = (scrollToY) => {
   debug("getCompetitions");
+  startLastPassTimer();
 
   let settings = loadSettings(defaultSettings)
   let cachedCompetitions = getCompetitionsListCache(settings)
@@ -198,29 +199,29 @@ let _getCompetitionList = (cid) => {
 
     var xhr = new XMLHttpRequest();
 
-    xhr.addEventListener("loadend", function() {
+    xhr.addEventListener("loadend", function () {
       var json = JSON.parse(xhr.response);
       if (xhr.status === 401) {
-        reject("Can't access competitions")
+        reject("Can't access competitions");
       } else if (xhr.status === 200 && json.competitions) {
         //debug("competitions: " + JSON.stringify(json))
         let competitions = json.competitions;
-        if(competitions.some( el => el.id == cid)) {
-          let competition = competitions.find( el => el.id == cid )
-          if(competition !== undefined) {
+        if (competitions.some(el => el.id == cid)) {
+          let competition = competitions.find(el => el.id == cid);
+          if (competition !== undefined) {
             //debug("resolve: " + competition.name)
-            resolve(competition.name)
+            resolve(competition.name);
           } else {
             //debug("reject - no hit")
-            reject("No hit!") // Impossible case?
+            reject("No hit!"); // Impossible case?
           }
         } else {
           //debug("reject - okänt namn")
-          resolve("Okänt namn")
+          resolve("Okänt namn");
         }
       } else {
         //debug("reject - no response")
-        reject("No response!")
+        reject("No response!");
       }
     });
 
@@ -525,7 +526,7 @@ let activateClassButtons = (className) => {
   });
 }
 
-let getStatus = (code) => {
+let getStatusText = (code) => {
 // 0 - OK
 // 1 - DNS (Did Not Start)
 // 2 - DNF (Did not finish)
@@ -606,25 +607,33 @@ let getClassResult = (competitionId, className) => {
         saveResult(hashKey, json)
       }
       let classResult = json.results;
+      let splitControls = json.splitcontrols;
       saveHash(hashKey, json.hash);
 
       //debug(classResult)
 
       let html = ""
       let dirtySettings = loadSettings()
+
+      // Get radio/split controls
+      debug("splitControls")
+      console.dir(splitControls)
+      let nrSplitControls = splitControls.length;
+      console.log(nrSplitControls)
+
+      // Render class results
       classResult.forEach((data, idx) => {
 
-
-// 0 - OK --> "Check box"
-// 1 - DNS (Did Not Start) --> didNotStartSVG 
-// 2 - DNF (Did not finish) --> didNotFinishSVG
-// 3 - MP (Missing Punch) --> missingPunchSVG
-// 4 - DSQ (Disqualified) --> "Cone striped"
-// 5 - OT (Over (max) time) --> overTimeSVG
-// 9 - Not Started Yet --> "Alarm" Clock ?
-// 10 - Not Started Yet --> 
-// 11 - Walk Over (Resigned before the race started) --> 
-// 12 - Moved up (The runner have been moved to a higher class) --> 
+      // 0 - OK --> "Check box"
+      // 1 - DNS (Did Not Start) --> didNotStartSVG 
+      // 2 - DNF (Did not finish) --> didNotFinishSVG
+      // 3 - MP (Missing Punch) --> missingPunchSVG
+      // 4 - DSQ (Disqualified) --> "Cone striped"
+      // 5 - OT (Over (max) time) --> overTimeSVG
+      // 9 - Not Started Yet --> "Alarm" Clock ?
+      // 10 - Not Started Yet --> 
+      // 11 - Walk Over (Resigned before the race started) --> 
+      // 12 - Moved up (The runner have been moved to a higher class) --> 
 
         // DT_RowClass: "new_result"
 
@@ -643,21 +652,26 @@ let getClassResult = (competitionId, className) => {
           }
           if(isBookmarked(data.name, dirtySettings)) {
             //html += '<td class="text-center" scope="row">' + safe(data.place) + '</td>'
-            html += '<td class="font-weight-bold">' + safe(data.name) + '<a href="#" title="Avmarkera" class="pl-1 link" onclick="toggleBookmark(\'' + safe(data.name) + '\', this);return false;">' + safe(generateFavoriteSVG(true)) + '</a>'
+            html += '<td class="text-nowrap"><span class="font-weight-bold d-inline-block text-truncate" style="max-width:80%">' + safe(data.name) + '</span>'
+              + '<a href="#" title="Avmarkera" class="align-top d-inline-block ml-2 mt-0 link" onclick="toggleBookmark(\'' + safe(data.name) + '\', this);return false;">' + safe(generateFavoriteSVG(true)) + '</a>'
           } else {
-            html += '<td class="font-weight-bold">' + safe(data.name) + '<a href="#" title="Bokmärk" class="pl-1 link" onclick="toggleBookmark(\'' + safe(data.name) + '\', this);return false;">' + safe(generateFavoriteSVG(false)) + '</a>'
+            html += '<td class="text-nowrap"><span class="font-weight-bold d-inline-block text-truncate" style="max-width:60%;">' + safe(data.name) + '</span>'
+              + '<a href="#" title="Bokmärk" class="align-top d-inline-block ml-2 mt-0 link" onclick="toggleBookmark(\'' + safe(data.name) + '\', this);return false;">' + safe(generateFavoriteSVG(false)) + '</a>'
           }
           html += '<br><a href="#" title="Visa klubbresultat" class="small text-warning" onclick="getClubResult(\'' + competitionId + '\',\'' + safe(data.club) + '\');return false;">' + safe(data.club) + '</a></td>'
           html += '<td class="small text-center">' + moment(data.start * 10).subtract(1,'hour').format("HH:mm") + '</td>' // Summertime. What happens in wintertime??
-          //if(data.status === 9 || data.status === 10) {
-          if(data.status !== 0) {
-            html += '<td class="small text-center" colspan="2">' + getStatus(data.status) + '</td>'
+          if((data.status === 9 || data.status === 10) && data.place == "" && data.start != "") {
+            // Runner is out - calculate predicted time
+            html += '<td class="small text-center" colspan="2">' + getStatusText(data.status) + '</td>'
+          }
+          else if(data.status !== 0) {
+            html += '<td class="small text-center" colspan="2">' + getStatusText(data.status) + '</td>'
           } else {
-              html += '<td class="small text-center">' + safe(data.result) + '</td>'
+            html += '<td class="small text-center">' + safe(data.result) + '</td>'
             if(data.DT_RowClass === "new_result") {
-              html += '<td class="small text-center">' + safe(data.timeplus) + '<br><span class="badge badge-light">Ny</span></td>' 
+              html += '<td class="small text-center">' + safe(data.timeplus).replace("+00:00","") + '<br><span class="badge badge-light">Ny</span></td>' 
             } else {
-              html += '<td class="small text-center">' + safe(data.timeplus) + '</td>' 
+              html += '<td class="small text-center">' + safe(data.timeplus).replace("+00:00","") + '</td>' 
             }
           }
         html += '</tr><!-- ' + safe(data.status) + ', ' + safe(data.progress) + ' -->'
@@ -669,6 +683,51 @@ let getClassResult = (competitionId, className) => {
       debug(json)
     }
   });
+}
+
+// Predict time for runners out
+let predictedTime = () => {
+/*
+
+        AjaxViewer.prototype.updatePredictedTimes = function () {
+            if (this.currentTable != null && this.curClassName != null && this.serverTimeDiff && this.updateAutomatically) {
+                try {
+                    var data = this.currentTable.fnGetData();
+                    var dt = new Date();
+                    var currentTimeZoneOffset = -1 * new Date().getTimezoneOffset();
+                    var eventZoneOffset = ((dt.dst() ? 2 : 1) + this.eventTimeZoneDiff) * 60;
+                    var timeZoneDiff = eventZoneOffset - currentTimeZoneOffset;
+                    var time = (dt.getSeconds() + (60 * dt.getMinutes()) + (60 * 60 * dt.getHours())) * 100
+                        - (this.serverTimeDiff / 10) +
+                        (timeZoneDiff * 6000);
+                    for (var i = 0; i < data.length; i++) {
+                        if ((data[i].status == 10 || data[i].status == 9) && data[i].place == "" && data[i].start != "") {
+                            if (data[i].start < time) {
+                                if (this.curClassSplits == null || this.curClassSplits.length == 0) {
+                                    $("#" + this.resultsDiv + " tr:eq(" + (data[i].curDrawIndex + 1) + ") td:eq(4)").html("<i>(" + this.formatTime(time - data[i].start, 0, false) + ")</i>");
+                                }
+                                else {
+                                    //find next split to reach
+                                    var nextSplit = 0;
+                                    for (var sp = this.curClassSplits.length - 1; sp >= 0; sp--) {
+                                        if (data[i].splits[this.curClassSplits[sp].code] != "") {
+                                            {
+                                                nextSplit = sp + 1;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    $("#" + this.resultsDiv + " tr:eq(" + (data[i].curDrawIndex + 1) + ") td:eq(" + (4 + nextSplit) + ")").html("<i>(" + this.formatTime(time - data[i].start, 0, false) + ")</i>");
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (e) {
+                }
+            }
+        };
+*/
 }
 
 // api.php?comp=10259&method=getcclubresults&unformattedTimes=true&club=Klyftamo
@@ -738,7 +797,7 @@ let getClubResult = (competitionId, clubName) => {
           html += '<td class="small text-center"">' + moment(data.start * 10).subtract(1,'hour').format("HH:mm") + '</td>' // Summertime. What happens in wintertime??
           
           if(data.status !== 0) {
-            html += '<td class="small text-center" colspan="2">' + getStatus(data.status) + '</td>'
+            html += '<td class="small text-center" colspan="2">' + getStatusText(data.status) + '</td>'
           } else {
             html += '<td class="small text-center">' + safe(data.result) + '</td>'
             html += '<td class="small text-center">' + safe(data.timeplus) + '</td>'
@@ -925,55 +984,33 @@ const timerTTL = 15000 // 15 seconds according to API rules
 let lastPassTimerStartTime
 let lastPassTimer
 let startLastPassTimer = (competitionId) => {
-  //debug("start timer: " + competitionId)
-  //document.getElementById("resultTimerToggler").innerHTML = timerOnSVG
-  let timerElement = document.getElementById("lastPassingTimer")
-  //if(timerElement.)
+  //let timerElement = document.getElementById("lastPassingTimer");
   if(!settings.lastPassingTimer) {
-    //debug("starting last pass timer: " + competitionId)
-    settings.lastPassingTimer = true
-    timerElement.style='width: 0%;'
-    lastPassTimerStartTime = Date.now()
-    //debug("here")
-    //lastPassTimer = setInterval(tickLastPassTimer, 500, competitionId) // Might not work in Safari? https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setInterval
-    lastPassTimer = setInterval(tickLastPassTimer.bind(null,competitionId), 1000) // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind
-    //lastPassTimer = setInterval(tickLastPassTimer(competitionId), 500)
-    //debug("lastPassTimer: " + lastPassTimer)
+    settings.lastPassingTimer = true;
+    //timerElement.style='width: 0%;'
+    lastPassTimerStartTime = Date.now();
+    lastPassTimer = setInterval(tickLastPassTimer.bind(null,competitionId), 1000) // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind;
   }
 }
 let stopLastPassTimer = () => {
-  //document.getElementById("resultTimerToggler").innerHTML = timerOffSVG
-
-  let timerElement = document.getElementById("lastPassingTimer")
-  settings.lastPassingTimer = false
-  timerElement.style='width: 0%;'
-  lastPassTimerStartTime = Date.now()
-  clearInterval(lastPassTimer)
+  //let timerElement = document.getElementById("lastPassingTimer");
+  settings.lastPassingTimer = false;
+  //timerElement.style='width: 0%;';
+  lastPassTimerStartTime = Date.now();
+  clearInterval(lastPassTimer);
 }
 let tickLastPassTimer = (competitionId) => {
-  //debug("last passing timer: " + competitionId)
-
   if(settings.lastPassingTimer) {
-    let now = Date.now()
-    //debug(now)
-    //debug(lastPassTimerStartTime)
-    //debug(timerTTL)
-    let timerElement = document.getElementById("lastPassingTimer")
-    timerElement.style='width: ' + Math.round(((now - lastPassTimerStartTime)/timerTTL)*100) + '%;'
-    document.getElementById("lastPassingsTitle").innerHTML = "(Uppdateras om " + Math.round((timerTTL - (now - lastPassTimerStartTime))/1000) + " s)"
-    //debug(Math.round(((now - resultTimerStartTime)/timerTTL)*100))
-    //debug(now - resultTimerStartTime)
-    //debug("timer test: " + ((now - lastPassTimerStartTime > timerTTL)))
+    let now = Date.now();
+    //let timerElement = document.getElementById("lastPassingTimer");
+    //timerElement.style='width: ' + Math.round(((now - lastPassTimerStartTime)/timerTTL)*100) + '%;';
+    //document.getElementById("lastPassingsTitle").innerHTML = "(Uppdateras om " + Math.round((timerTTL - (now - lastPassTimerStartTime))/1000) + " s)";
     if(now - lastPassTimerStartTime > timerTTL) {
-      //stopResultTimer()
-      //debug("true in ticker")
-      timerElement.style='width: 100%;'
-      settings.lastPassingTimer = false
+      //timerElement.style='width: 100%;';
+      settings.lastPassingTimer = false;
       // Update and restart
-      getLastPassings(competitionId)
-      startLastPassTimer(competitionId)
-    } else {
-      //lastPassTimer = setTimeout(tickLastPassTimer(competitionId), 500)
+      getLastPassings(competitionId);
+      startLastPassTimer(competitionId);
     }
   }
 }
@@ -981,37 +1018,37 @@ let tickLastPassTimer = (competitionId) => {
 let resultTimerStartTime
 let resultTimer
 let startResultTimer = () => {
-  document.getElementById("resultTimerToggler").innerHTML = timerOnSVG
-  document.getElementById("resultTimer").style='width: 0%;'
-  resultTimerStartTime = Date.now()
-  resultTimer = setInterval(tickResultTimer, 500)
+  document.getElementById("resultTimerToggler").innerHTML = timerOnSVG;
+  document.getElementById("resultTimer").style='width: 0%;';
+  resultTimerStartTime = Date.now();
+  resultTimer = setInterval(tickResultTimer, 500);
 }
 let stopResultTimer = () => {
-  document.getElementById("resultTimerToggler").innerHTML = timerOffSVG
-  document.getElementById("resultTimer").style='width: 0%;'
-  resultTimerStartTime = Date.now()
-  clearInterval(resultTimer)
+  document.getElementById("resultTimerToggler").innerHTML = timerOffSVG;
+  document.getElementById("resultTimer").style='width: 0%;';
+  resultTimerStartTime = Date.now();
+  clearInterval(resultTimer);
 }
 let tickResultTimer = () => {
-  let now = Date.now()
-  document.getElementById("resultTimer").style='width: ' + Math.round(((now - resultTimerStartTime)/timerTTL)*100) + '%;'
+  let now = Date.now();
+  document.getElementById("resultTimer").style='width: ' + Math.round(((now - resultTimerStartTime)/timerTTL)*100) + '%;';
   //debug(Math.round(((now - resultTimerStartTime)/timerTTL)*100))
   //debug(now - resultTimerStartTime)
   if(now - resultTimerStartTime > timerTTL) {
-    stopResultTimer()
+    stopResultTimer();
   }
 }
 let togglerResultTimer = () => {
   //debug("togglerResultTimer")
-  let settings = loadSettings()
+  let settings = loadSettings();
   if(settings.resultTimer) {
-    startResultTimer()
-    settings.resultTimer = false
+    startResultTimer();
+    settings.resultTimer = false;
   } else {
-    stopResultTimer()
-    settings.resultTimer = true
+    stopResultTimer();
+    settings.resultTimer = true;
   }
-  saveSettings(settings)
+  saveSettings(settings);
 }
 
 // Utility function to get id for key in hash
@@ -1070,155 +1107,137 @@ let state = {
 
 
 // EVENT LISTENERS 
-$( document ).ready(function() {
+$( document ).ready(() => {
+    // ------------------ Initial setup start -----------------------------------
+    debug("ready!");
 
-  // ------------------ Initial setup start -----------------------------------
+    document.getElementById("appLabel").innerHTML = 'Live-OL Results (v' + version + ')';
 
-  debug( "ready!" );
+    // Load state from URL
+    //$("#logo").replaceWith(logoSVG)
+    // Get recent competitions
+    //$('#onlyOrganizerFavorites')[0].checked
+    // Load settings
+    let settings = loadSettings();
 
-  document.getElementById("appLabel").innerHTML = 'Live-OL Results (v' + version + ')'
-
-  // Load state from URL
-
-  //$("#logo").replaceWith(logoSVG)
-
-  // Get recent competitions
-  //$('#onlyOrganizerFavorites')[0].checked
-
-
-  // Load settings
-  let settings = loadSettings()
-
-  // Update page according to settings
-  if(settings.onlyClubFavorites) {
-    $('#onlyOrganizerFavorites')[0].checked = true
-  }
-
-  // Add settings from input/URL
-  if( document.location.hash ) {
-    let cid = getHashIdValue("cid")
-    //debug("hash is something: " + cid)
-    if(cid != null) {
-      // Display competition
-      settings.competitionId = parseInt(cid);
-      settings.competitionName = getCompetitionNameById(cid) // "Test" // TODO
-      state.toggleView(VIEWS.RESULT, settings);
-
-      // Load class result if applicable
-      let className = getHashIdValue("class")
-      if(className != null) {
-        //debug("hash class is something: " + className)
-        getClassResult(parseInt(cid), className)
-        setTimeout(function() {activateClassButtons(className)}, 300) // Ugly fix
-        //setTimeout(alert(className), 3000) // Ugly fix
-      }
-
-      // Load club result if applicable
-      let clubName = getHashIdValue("clubName")
-      if(clubName != null) {
-        //debug("hash club is something: " + clubName)
-        getClubResult(parseInt(cid), clubName)
-      }
+    // Update page according to settings
+    if (settings.onlyClubFavorites) {
+      $('#onlyOrganizerFavorites')[0].checked = true;
     }
 
-  } else {
-    state.toggleView(VIEWS.OVERVIEW);
-  }
+    // Add settings from input/URL
+    if (document.location.hash) {
+      let cid = getHashIdValue("cid");
+      //debug("hash is something: " + cid)
+      if (cid != null) {
+        // Display competition
+        settings.competitionId = parseInt(cid);
+        settings.competitionName = getCompetitionNameById(cid); // "Test" // TODO
+        state.toggleView(VIEWS.RESULT, settings);
+
+        // Load class result if applicable
+        let className = getHashIdValue("class");
+        if (className != null) {
+          //debug("hash class is something: " + className)
+          getClassResult(parseInt(cid), className);
+          setTimeout(function () { activateClassButtons(className); }, 300); // Ugly fix
 
 
-  // Save updated settings
-  // Skip?
 
-  // View page according to settings
-  // getCompetitions()
+          //setTimeout(alert(className), 3000) // Ugly fix
+        }
+
+        // Load club result if applicable
+        let clubName = getHashIdValue("clubName");
+        if (clubName != null) {
+          //debug("hash club is something: " + clubName)
+          getClubResult(parseInt(cid), clubName);
+        }
+      }
+
+    } else {
+      state.toggleView(VIEWS.OVERVIEW);
+    }
 
 
-
-  //let currentCompetition = -1
-  //if(!Number.isNaN(Number.parseInt(document.location.hash.replace('#cid=','')))) {
-  //  currentCompetition = Number.parseInt(document.location.hash.replace('#cid=',''))
-
-  //startLastPassTimer()
-
+    // Save updated settings
+    // Skip?
+    // View page according to settings
+    // getCompetitions()
+    //let currentCompetition = -1
+    //if(!Number.isNaN(Number.parseInt(document.location.hash.replace('#cid=','')))) {
+    //  currentCompetition = Number.parseInt(document.location.hash.replace('#cid=',''))
+    //startLastPassTimer()
     /*if(settings.resultTimer) {
       startResultTimer()
     } else {
       stopResultTimer()
     }
 */
-
     /*if(settings.lastPassingTimer) {
       document.getElementById("lastPassingTimerToggler").innerHTML = timerOffSVG
     } else {
       document.getElementById("lastPassingTimerToggler").innerHTML = timerOffSVG
     }*/
-
     /*
     if(settings.resultTimer) {
       document.getElementById("resultTimerToggler").innerHTML = timerOffSVG
     } else {
       document.getElementById("resultTimerToggler").innerHTML = timerOffSVG
     }*/
-
     //showResultScreen()
     //showCompetitionResults(currentCompetition)
+    //} else {
+    //}
+    // --------------- Event handlers start -------------------------------------
+    $('#settingsBackdrop').on('show.bs.modal', function (e) {
+      //debug("Settings show")
+      generateSettingsList();
+    });
+    $('#settingsBackdrop').on('hide.bs.modal', function (e) {
+      //debug("Settings dismissed")
+      getCompetitions();
+    });
 
-  //} else {
-  //}
-
-  // --------------- Event handlers start -------------------------------------
-  $('#settingsBackdrop').on('show.bs.modal', function (e) {
-    //debug("Settings show")
-    generateSettingsList()
-  })
-  $('#settingsBackdrop').on('hide.bs.modal', function (e) {
-    //debug("Settings dismissed")
-    getCompetitions()
-  })
-
-  $('#onlyOrganizerFavorites').change(function (e) {
-    //debug("onlyOrganizerFavorites: " + $('#onlyOrganizerFavorites')[0].checked)
-    if(!$('#onlyOrganizerFavorites')[0].checked) {
-      removeCompetitionsListCache()
-    }
-    getCompetitions()
-  })
+    $('#onlyOrganizerFavorites').change(function (e) {
+      //debug("onlyOrganizerFavorites: " + $('#onlyOrganizerFavorites')[0].checked)
+      if (!$('#onlyOrganizerFavorites')[0].checked) {
+        removeCompetitionsListCache();
+      }
+      getCompetitions();
+    });
 
 
-  window.addEventListener('hashchange', function() {
-    //debug('The hash has changed!')
-    //debug(location.hash)
-
-    let settings = loadSettings()
-    let tmpCompetitionId = getHashIdValue("cid")
-    if(tmpCompetitionId != settings.competitionId) {
-      settings.competitionId = parseInt(tmpCompetitionId);
-      saveSettings(settings);
-      //let state = { "competitionId": competitionId}
-      //history.pushState(state, "")
-      //debug(state)
-    }
-  }, false);
-  // --------------- Event handlers end -------------------------------------
-
-  // ------------------ Initial setup end -------------------------------------
-
-  /*window.addEventListener('hashchange', function() {
-    //updateState(currentState)
-    //debug(location.hash)
-    updateState(location.hash)
-  }, false);*/
-
-/*
-  $('#resultTimerToggler').click(function (e) {
-    togglerResultTimer()
-  })
-  */
-  /*$('#onlyPersonFavorites').change(function (e) {
-    if(!$('#onlyPersonFavorites')[0].checked) {
-      debug("person favorites")
-    }
-    //getCompetitions()
-  })*/
-});
+    window.addEventListener('hashchange', function () {
+      //debug('The hash has changed!')
+      //debug(location.hash)
+      let settings = loadSettings();
+      let tmpCompetitionId = getHashIdValue("cid");
+      if (tmpCompetitionId != settings.competitionId) {
+        settings.competitionId = parseInt(tmpCompetitionId);
+        saveSettings(settings);
+        //let state = { "competitionId": competitionId}
+        //history.pushState(state, "")
+        //debug(state)
+      }
+    }, false);
+    // --------------- Event handlers end -------------------------------------
+    // ------------------ Initial setup end -------------------------------------
+    /*window.addEventListener('hashchange', function() {
+      //updateState(currentState)
+      //debug(location.hash)
+      updateState(location.hash)
+    }, false);*/
+    /*
+      $('#resultTimerToggler').click(function (e) {
+        togglerResultTimer()
+      })
+      */
+    /*$('#onlyPersonFavorites').change(function (e) {
+      if(!$('#onlyPersonFavorites')[0].checked) {
+        debug("person favorites")
+      }
+      //getCompetitions()
+    })*/
+  });
 
