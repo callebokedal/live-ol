@@ -573,6 +573,62 @@ let getStatusText = (code) => {
   }
 }
 
+let formatTime = function (time, status, showTenthOs, showHours, padZeros) {
+  /*if (arguments.length == 2 || arguments.length == 3) {
+      if (this.language == 'fi') {
+          showHours = true;
+          padZeros = false;
+      }
+      else {
+          showHours = false;
+          padZeros = true;
+      }
+  }
+  else if (arguments.length == 4) {
+      if (this.language == 'fi') {
+          padZeros = false;
+      }
+      else {
+          padZeros = true;
+      }
+  }*/
+  /*if (status != 0) {
+      return status; //ORG: this.runnerStatus[status];
+  }
+  else {*/
+      var minutes;
+      var seconds;
+      var tenth;
+      if (showHours) {
+          var hours = Math.floor(time / 360000);
+          minutes = Math.floor((time - hours * 360000) / 6000);
+          seconds = Math.floor((time - minutes * 6000 - hours * 360000) / 100);
+          tenth = Math.floor((time - minutes * 6000 - hours * 360000 - seconds * 100) / 10);
+          if (hours > 0) {
+              if (padZeros)
+                  hours = hours.toString().padStart(2, "0");
+              return hours + ":" + minutes.padStart(2, "0") + ":" + seconds.toString().padStart(2, "0") + (showTenthOs ? "." + tenth : "");
+          }
+          else {
+              if (padZeros)
+                  minutes = minutes.toString().padStart(2, "0");
+              return `${minutes}:${seconds.toString().padStart(2, "0")}${showTenthOs ? "." + tenth : ""}`;
+          }
+      }
+      else {
+          minutes = Math.floor(time / 6000);
+          seconds = Math.floor((time - minutes * 6000) / 100);
+          tenth = Math.floor((time - minutes * 6000 - seconds * 100) / 10);
+          if (padZeros) {
+              return minutes.toString().padStart(2, "0") + ":" + seconds.toString().padStart(2, "0") + (showTenthOs ? "." + tenth : "");
+          }
+          else {
+              return `${minutes}:${seconds.toString().padStart(2, "0")}${showTenthOs ? "." + tenth : ""}`;
+          }
+      }
+  //}
+};
+
 // api.php?comp=10259&method=getclassresults&includetotal=true&unformattedTimes=true&class=Öppen-1
 let getClassResult = (competitionId, className) => {
   className = decodeURIComponent(className)
@@ -585,10 +641,15 @@ let getClassResult = (competitionId, className) => {
   // history.pushState({page: 1}, "title 1", "?page=1")
 
   let hashKey = "className"+competitionId+className
-  activateClassButtons(className)
+  activateClassButtons(className);
 
   // Temp fix
-  getLastPassings(competitionId)
+  getLastPassings(competitionId);
+
+  // Reset split columns to hidden (max 3 supported)
+  [1,2,3].forEach((el) => {
+    $( "#r"+el ).addClass( "d-none" )
+  });
 
   // Fetch new data
   var xhr = new XMLHttpRequest();
@@ -616,24 +677,28 @@ let getClassResult = (competitionId, className) => {
       let dirtySettings = loadSettings()
 
       // Get radio/split controls
-      debug("splitControls")
-      console.dir(splitControls)
+      //debug("splitControls")
+      //console.dir(splitControls)
       let nrSplitControls = splitControls.length;
-      console.log(nrSplitControls)
+      splitControls.forEach((ctrl, idx) => {
+        // Show split column headers
+        $( "#r"+(idx+1) ).removeClass( "d-none" )
+        //document.getElementById("r"+idx).removeClass("d-none")
+      });
 
       // Render class results
       classResult.forEach((data, idx) => {
 
-      // 0 - OK --> "Check box"
-      // 1 - DNS (Did Not Start) --> didNotStartSVG 
-      // 2 - DNF (Did not finish) --> didNotFinishSVG
-      // 3 - MP (Missing Punch) --> missingPunchSVG
-      // 4 - DSQ (Disqualified) --> "Cone striped"
-      // 5 - OT (Over (max) time) --> overTimeSVG
-      // 9 - Not Started Yet --> "Alarm" Clock ?
-      // 10 - Not Started Yet --> 
-      // 11 - Walk Over (Resigned before the race started) --> 
-      // 12 - Moved up (The runner have been moved to a higher class) --> 
+        // 0 - OK --> "Check box"
+        // 1 - DNS (Did Not Start) --> didNotStartSVG 
+        // 2 - DNF (Did not finish) --> didNotFinishSVG
+        // 3 - MP (Missing Punch) --> missingPunchSVG
+        // 4 - DSQ (Disqualified) --> "Cone striped"
+        // 5 - OT (Over (max) time) --> overTimeSVG
+        // 9 - Not Started Yet --> "Alarm" Clock ?
+        // 10 - Not Started Yet --> 
+        // 11 - Walk Over (Resigned before the race started) --> 
+        // 12 - Moved up (The runner have been moved to a higher class) --> 
 
         // DT_RowClass: "new_result"
 
@@ -652,27 +717,40 @@ let getClassResult = (competitionId, className) => {
           }
           if(isBookmarked(data.name, dirtySettings)) {
             //html += '<td class="text-center" scope="row">' + safe(data.place) + '</td>'
-            html += '<td class="text-nowrap"><span class="font-weight-bold d-inline-block text-truncate" style="max-width:80%">' + safe(data.name) + '</span>'
+            html += '<td class="text-nowrap"><span class="font-weight-bold d-inline-block text-truncate" style="max-width:85%">' + safe(data.name) + '</span>'
               + '<a href="#" title="Avmarkera" class="align-top d-inline-block ml-2 mt-0 link" onclick="toggleBookmark(\'' + safe(data.name) + '\', this);return false;">' + safe(generateFavoriteSVG(true)) + '</a>'
           } else {
-            html += '<td class="text-nowrap"><span class="font-weight-bold d-inline-block text-truncate" style="max-width:60%;">' + safe(data.name) + '</span>'
+            html += '<td class="text-nowrap"><span class="font-weight-bold d-inline-block text-truncate" style="max-width:85%;">' + safe(data.name) + '</span>'
               + '<a href="#" title="Bokmärk" class="align-top d-inline-block ml-2 mt-0 link" onclick="toggleBookmark(\'' + safe(data.name) + '\', this);return false;">' + safe(generateFavoriteSVG(false)) + '</a>'
           }
           html += '<br><a href="#" title="Visa klubbresultat" class="small text-warning" onclick="getClubResult(\'' + competitionId + '\',\'' + safe(data.club) + '\');return false;">' + safe(data.club) + '</a></td>'
           html += '<td class="small text-center">' + moment(data.start * 10).subtract(1,'hour').format("HH:mm") + '</td>' // Summertime. What happens in wintertime??
           if((data.status === 9 || data.status === 10) && data.place == "" && data.start != "") {
             // Runner is out - calculate predicted time
-            html += '<td class="small text-center" colspan="2">' + getStatusText(data.status) + '</td>'
+            html += '<td class="small text-center" colspan="' + (1+splitControls.length) + '">' + getStatusText(data.status) + '</td>'
           }
           else if(data.status !== 0) {
-            html += '<td class="small text-center" colspan="2">' + getStatusText(data.status) + '</td>'
+            html += '<td class="small text-center" colspan="' + (1+splitControls.length) + '">' + getStatusText(data.status) + '</td>'
           } else {
-            html += '<td class="small text-center">' + safe(data.result) + '</td>'
-            if(data.DT_RowClass === "new_result") {
+            // Display result
+            if(data.splits) {
+              // Display split results
+              splitControls.forEach((split, idx) => {
+                //console.dir(split)
+                var t = formatTime(data.splits[ split.code ], data.splits[ split.code + "_place"], false, true, true);
+                html += '<td class="small text-center">' + t + '&nbsp;(' + safe(data.splits[ split.code + "_place"]) + ')'
+                + '<br><span class="text-white-50">+' + formatTime(safe(data.splits[ split.code + "_timeplus"]),0,false,true,true) + '</span></td>';
+              });
+              //html += '<td class="small text-center">' + safe(data.splits["1036_status"]) + '</td>'
+            }
+
+            html += '<td class="small text-center">' + safe(data.result)  
+              + '<br><span class="text-white-50">' + safe(data.timeplus).replace("+00:00","") + '</span></td>'
+            /*if(data.DT_RowClass === "new_result") {
               html += '<td class="small text-center">' + safe(data.timeplus).replace("+00:00","") + '<br><span class="badge badge-light">Ny</span></td>' 
             } else {
               html += '<td class="small text-center">' + safe(data.timeplus).replace("+00:00","") + '</td>' 
-            }
+            }*/
           }
         html += '</tr><!-- ' + safe(data.status) + ', ' + safe(data.progress) + ' -->'
       });
