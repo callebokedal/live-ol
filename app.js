@@ -4,7 +4,7 @@
 moment().format()
 moment.locale('sv');
 
-const version = "1.4.7";
+const version = "1.4.8";
 
 const dp = DOMPurify;
 var dp_config = {
@@ -341,16 +341,16 @@ const bookmarkedSVG = '<svg class="bi bi-bookmark-fill text-warning" width="1em"
 const timerOffSVG = '<svg class="bi bi-arrow-repeat" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M2.854 7.146a.5.5 0 00-.708 0l-2 2a.5.5 0 10.708.708L2.5 8.207l1.646 1.647a.5.5 0 00.708-.708l-2-2zm13-1a.5.5 0 00-.708 0L13.5 7.793l-1.646-1.647a.5.5 0 00-.708.708l2 2a.5.5 0 00.708 0l2-2a.5.5 0 000-.708z" clip-rule="evenodd"/><path fill-rule="evenodd" d="M8 3a4.995 4.995 0 00-4.192 2.273.5.5 0 01-.837-.546A6 6 0 0114 8a.5.5 0 01-1.001 0 5 5 0 00-5-5zM2.5 7.5A.5.5 0 013 8a5 5 0 009.192 2.727.5.5 0 11.837.546A6 6 0 012 8a.5.5 0 01.501-.5z" clip-rule="evenodd"/></svg>'
 const timerOnSVG = '<svg class="bi bi-arrow-repeat text-primary" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M2.854 7.146a.5.5 0 00-.708 0l-2 2a.5.5 0 10.708.708L2.5 8.207l1.646 1.647a.5.5 0 00.708-.708l-2-2zm13-1a.5.5 0 00-.708 0L13.5 7.793l-1.646-1.647a.5.5 0 00-.708.708l2 2a.5.5 0 00.708 0l2-2a.5.5 0 000-.708z" clip-rule="evenodd"/><path fill-rule="evenodd" d="M8 3a4.995 4.995 0 00-4.192 2.273.5.5 0 01-.837-.546A6 6 0 0114 8a.5.5 0 01-1.001 0 5 5 0 00-5-5zM2.5 7.5A.5.5 0 013 8a5 5 0 009.192 2.727.5.5 0 11.837.546A6 6 0 012 8a.5.5 0 01.501-.5z" clip-rule="evenodd"/></svg>'
 
-let generateResultTimeStatus = (status) => {
-  if(status == "ej start") {
-    return didNotStartSVG.replace("white-50","secondary") + '<small class="pl-1">Ej start</small>'
-  } else if(status == "utgått") {
-    return didNotFinishSVG.replace("white-50","secondary") + '<small class="pl-1">Utgått</small>'
-  } else if(status == "felst.") {
-    return missingPunchSVG.replace("white-50","secondary") + '<small class="pl-1">Felstämplat</small>'
+let generateResultTimeStatus = (statusOrTime) => {
+  //  gick i mål på tiden <span class="font-weight-bold">' + safe(data.time) + '</span>
+  if(statusOrTime == "ej start") {
+    return didNotStartSVG.replace("white-50","secondary") + '<span class="pl-1">Ej start</span>'
+  } else if(statusOrTime == "utgått") {
+    return didNotFinishSVG.replace("white-50","secondary") + '<span class="pl-1">Utgått</span>'
+  } else if(statusOrTime == "felst.") {
+    return missingPunchSVG.replace("white-50","secondary") + '<span class="pl-1">Felstämplat</span>'
   } else {
-    //return olSVG + '<small class="pl-1">' + status + '</small>'
-    return finishedSVG.replace("white-50","secondary") + '<small class="pl-1">' + status + '</small>'
+    return 'gick i mål på tiden <span class="font-weight-bold">' + safe(statusOrTime) + '</span> ' + finishedSVG.replace("white-50","secondary")
   }
 }
 
@@ -402,19 +402,26 @@ let generateCompetitionsList = (data) => {
 
 // api.php?method=getclasses&comp=XXXX&last_hash=abcdefg
 let getLastPassings = (competitionId) => {
-  //debug("getLastPassings")
-  let hashKey = "pass"+competitionId
+  let cid = parseInt(safe(competitionId))
 
-  if(!Number.isInteger(competitionId)) {
-    console.error("Illegal competitonsId: " + competitionId)
+  if(!Number.isInteger(cid)) {
+    cid = parseInt(getHashValue("cid"))
+  }
+
+  if(!Number.isInteger(cid)) {
+    console.error("Illegal competitonsId: " + cid)
+    stopLastPassTimer()
     return
   }
 
-  startLastPassTimer(competitionId)
+  debug("getLastPassings - cid: " + cid)
+  let hashKey = "pass"+cid
+
+  startLastPassTimer(cid)
 
   // Fetch new data
   var xhr = new XMLHttpRequest();
-  xhr.open("GET", "https://liveresultat.orientering.se/api.php?method=getlastpassings&comp=" + competitionId + "&last_hash=" + loadHash(hashKey));
+  xhr.open("GET", "https://liveresultat.orientering.se/api.php?method=getlastpassings&comp=" + cid + "&last_hash=" + loadHash(hashKey));
   xhr.send(null);
 
   xhr.addEventListener("loadend", function() {
@@ -429,23 +436,51 @@ let getLastPassings = (competitionId) => {
       }
 
       let passings = json.passings;
-      saveHash("pass"+competitionId, json.hash);
+      // array.sort(function(a,b){return a[1] - b[1]});
+      //passings = passings.sort(function(a,b){return a.time - b.time});
+      saveHash("pass"+cid, json.hash);
 
       //debug(passings)
-      //debug(loadHash("pass"+competitionId))
+      //debug(loadHash("pass"+cid))
 
       let html = ""
 
+      /*
+      
+      { "status": "OK", "passings" : [{"passtime": "16:13:41",
+					"runnerName": "Alvin Lind",
+					"class": "H16",
+					"control": 1000,
+					"controlName" : "",
+					"time": "48:36" },{"passtime": "16:13:41",
+					"runnerName": "Alvin Lind",
+					"class": "H16",
+					"control": 1048,
+					"controlName" : "Radio Väst",
+					"time": "34:39" },{"passtime": "16:13:41",
+					"runnerName": "Alvin Lind",
+					"class": "H16",
+					"control": 1036,
+					"controlName" : "Radio Öst",
+					"time": "11:35" }], "hash": "25f0ccf4e4a510d7d5be95580cc97b1a"} */
+
       if(passings.length == 0) {
         html = '<small>Inga resultat att visa</small>'
+        console.log("No passings to display")
       } else {
         passings.forEach(data => {
           html += '<li class="list-group-item bg-light p-2 d-flex">'
             html += '<small class="mr-2">' + safe(data.passtime) + '</small>'
             html += '<small class="mr-2 font-weight-bold">' + safe(data.runnerName) + '</small>'
-            html += '<small class="mr-auto">' + safe(generateResultTimeStatus(data.time)) + '</small>'
+            if(data.controlName === "") {
+              //html += '<small class="mr-auto"> gick i mål på tiden <span class="font-weight-bold">' + safe(data.time) + '</span></small>'
+              html += '<small class="mr-auto">' + safe(generateResultTimeStatus(data.time)) + '</small>'
+              //html += '<small class="mr-auto"> gick i mål med tiden ' + safe(generateResultTimeStatus(data.time)) + '</small>'
+            } else {
+              html += '<small class="mr-auto">passerade ' + safe(data.controlName) + ' med tiden ' + safe(data.time) + '</small>'              
+            }
+            html += '<button type="button" class="btn btn-dark btn-sm pl-1 pr-1 pt-0 pb-0 text-warning ml-auto" onclick="getClassResult(' + cid + ',\'' + safe(data.class) + '\');">' + safe(data.class) + '</button>'
             //html += '<small class="mr-2">(<a href="#" onclick="getClassResult(' + competitionId + ',\'' + safe(data.class) + '\');return false">' + safe(data.class) + '</a>)</small>'
-            html += '<button type="button" class="btn btn-dark btn-sm pl-1 pr-1 pt-0 pb-0 text-warning ml-auto" onclick="getClassResult(' + competitionId + ',\'' + safe(data.class) + '\');">' + safe(data.class) + '</button>'
             //html += '<small class="mr-2">(' + data.controlName + ', ' + data.control + ')</small>'
           html += '</li>'
         });
@@ -501,7 +536,7 @@ let getClasses = (competitionId) => {
 
       document.getElementById("classes").innerHTML = html
     } else {
-      debug("what?")
+      debug("?")
     }
   });
 }
@@ -632,13 +667,15 @@ let formatTime = function (time, status, showTenthOs, showHours, padZeros) {
 // api.php?comp=10259&method=getclassresults&includetotal=true&unformattedTimes=true&class=Öppen-1
 let getClassResult = (competitionId, className) => {
   className = decodeURIComponent(className)
-  $("#resultLabel")[0].innerHTML = "Resultat - " + className
+  
   debug("get classresult: " + competitionId + ", " + className)
 
   // Update URL/navigation
   debug("hash to set for class: " + "#cid=" + competitionId + "&class=" + encodeURIComponent(className))
   history.pushState({"view": VIEWS.OVERVIEW}, "", "#cid=" + competitionId + "&class=" + encodeURIComponent(className))
   // history.pushState({page: 1}, "title 1", "?page=1")
+
+  document.getElementById("resultLabel").innerHTML = "Resultat - " + getHashValue("class"); // className;
 
   let hashKey = "className"+competitionId+className
   activateClassButtons(className);
@@ -816,11 +853,16 @@ let getClubResult = (competitionId, clubName) => {
   debug("get clubresult: " + competitionId + ", " + clubName)
 
   // Update URL
-  debug("hash to set for club: " + "#cid=" + competitionId + "&class=" + encodeURIComponent(clubName))
-  history.pushState({"view": VIEWS.OVERVIEW}, "", "#cid=" + competitionId + "&clubName=" + encodeURIComponent(clubName))
+  debug("hash to set for club: " + "#cid=" + encodeURIComponent(safe(competitionId)) + "&class=" + encodeURIComponent(clubName))
+  history.pushState({"view": VIEWS.OVERVIEW}, "", "#cid=" + encodeURIComponent(competitionId) + "&clubName=" + encodeURIComponent(clubName))
 
-  let hashKey = "clubName"+competitionId+clubName
-  activateClassButtons(clubName)
+  let hashKey = "clubName"+competitionId+clubName;
+  activateClassButtons(clubName);
+
+  // Reset split columns to hidden (max 3 supported)
+  [1,2,3].forEach((el) => {
+    $( "#r"+el ).addClass( "d-none" )
+  });
 
   // Fetch new data
   var xhr = new XMLHttpRequest();
@@ -877,8 +919,7 @@ let getClubResult = (competitionId, clubName) => {
           if(data.status !== 0) {
             html += '<td class="small text-center" colspan="2">' + getStatusText(data.status) + '</td>'
           } else {
-            html += '<td class="small text-center">' + safe(data.result) + '</td>'
-            html += '<td class="small text-center">' + safe(data.timeplus) + '</td>'
+            html += '<td class="small text-center">' + safe(data.result) + '<br><span class="text-white-50">' + safe(data.timeplus) + '</span></td>'
           }
 
           //html += '<td class="small text-center"">' + safe(data.result) + '</td>'
@@ -1026,6 +1067,9 @@ let showCompetitionScreen = () => {
   history.pushState({"view": VIEWS.OVERVIEW}, "")
   getCompetitions()
 }
+
+// Show competetion result screen
+// Reset info to default state
 let showResultScreen = (name) => {
   $('#competitonsLabel').removeClass('active')
   $('#resultsLabel').addClass('active text-white')
@@ -1041,20 +1085,22 @@ let showResultScreen = (name) => {
   // startResultTimer() // TODO
 }
 
+// Show specified competition results
 let showCompetitionResults = (competitionId, competitionName) => {
-  debug("hello: " + competitionId)
+  let cid = parseInt(safe(competitionId))
+  debug("hello: " + cid)
 
   // Save competition id
-  settings.currentCompetition = competitionId
-  history.pushState({"view": VIEWS.RESULT, "competitionId": competitionId}, "")
+  settings.currentCompetition = cid
+  history.pushState({"view": VIEWS.RESULT, "competitionId": cid}, "")
 
   //if(typeof competitionName === 'undefined') {
   //  competitionName = data.name
   //}
 
-  showResultScreen(competitionName)
-  getClasses(competitionId)
-  getLastPassings(competitionId)
+  showResultScreen(safe(competitionName))
+  getLastPassings(cid)
+  getClasses(cid)
   //startLastPassTimer(competitionId)
 }
 
@@ -1072,6 +1118,7 @@ let startLastPassTimer = (competitionId) => {
 }
 let stopLastPassTimer = () => {
   //let timerElement = document.getElementById("lastPassingTimer");
+  console.debug("Stop last pass timer")
   settings.lastPassingTimer = false;
   //timerElement.style='width: 0%;';
   lastPassTimerStartTime = Date.now();
@@ -1132,6 +1179,23 @@ let togglerResultTimer = () => {
 // Utility function to get id for key in hash
 // Ex: getHashIdValue("cid") for ...#cid=123&foo=abc -> 123
 let getHashIdValue = (key) => {
+  console.warn("Legacy: Replace with getHashValue")
+  return getHashValue(key)
+}
+let getHashValue = (key) => {
+  // Modern browsers
+  if ('URLSearchParams' in window) {
+    // Browser supports URLSearchParams
+    let urlParams = new URLSearchParams(location.hash.replace("#",""));
+    if(urlParams.has(key)) {
+      // Return value (first if multiple)
+      return urlParams.get(key);
+    } else {
+      return "";
+    }
+  }
+  
+  // Legacy browsers
   let matches = location.hash.match(new RegExp(key+'=([^&]*)'));
   return matches ? safe(matches[1]) : null;
 }
