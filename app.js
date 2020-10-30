@@ -4,7 +4,7 @@
 moment().format()
 moment.locale('sv');
 
-const version = "1.4.8";
+const version = "1.5.0";
 
 const dp = DOMPurify;
 var dp_config = {
@@ -788,7 +788,7 @@ let getClassResult = (competitionId, className) => {
               });
             }
 
-            html += '<td class="small text-center">' + safe(data.result)  
+            html += '<td class="small text-center font-weight-bold">' + safe(data.result)  
               + '<br><span class="text-white-50">' + safe(data.timeplus).replace("+00:00","") + '</span></td>';
             /*if(data.DT_RowClass === "new_result") {
               html += '<td class="small text-center">' + safe(data.timeplus).replace("+00:00","") + '<br><span class="badge badge-light">Ny</span></td>' 
@@ -926,7 +926,7 @@ let getClubResult = (competitionId, clubName) => {
           if(data.status !== 0) {
             html += '<td class="small text-center" colspan="2">' + getStatusText(data.status) + '</td>'
           } else {
-            html += '<td class="small text-center">' + safe(data.result) + '<br><span class="text-white-50">' + safe(data.timeplus) + '</span></td>'
+            html += '<td class="small text-center font-weight-bold">' + safe(data.result) + '<br><span class="text-white-50">' + safe(data.timeplus) + '</span></td>'
           }
 
           //html += '<td class="small text-center"">' + safe(data.result) + '</td>'
@@ -1164,8 +1164,6 @@ let stopResultTimer = () => {
 let tickResultTimer = () => {
   let now = Date.now();
   document.getElementById("resultTimer").style='width: ' + Math.round(((now - resultTimerStartTime)/timerTTL)*100) + '%;';
-  //debug(Math.round(((now - resultTimerStartTime)/timerTTL)*100))
-  //debug(now - resultTimerStartTime)
   if(now - resultTimerStartTime > timerTTL) {
     stopResultTimer();
   }
@@ -1290,9 +1288,6 @@ $( document ).ready(() => {
           //debug("hash class is something: " + className)
           getClassResult(parseInt(cid), className);
           setTimeout(function () { activateClassButtons(className); }, 300); // Ugly fix
-
-
-
           //setTimeout(alert(className), 3000) // Ugly fix
         }
 
@@ -1370,23 +1365,5 @@ $( document ).ready(() => {
         //debug(state)
       }
     }, false);
-    // --------------- Event handlers end -------------------------------------
-    // ------------------ Initial setup end -------------------------------------
-    /*window.addEventListener('hashchange', function() {
-      //updateState(currentState)
-      //debug(location.hash)
-      updateState(location.hash)
-    }, false);*/
-    /*
-      $('#resultTimerToggler').click(function (e) {
-        togglerResultTimer()
-      })
-      */
-    /*$('#onlyPersonFavorites').change(function (e) {
-      if(!$('#onlyPersonFavorites')[0].checked) {
-        debug("person favorites")
-      }
-      //getCompetitions()
-    })*/
   });
 
