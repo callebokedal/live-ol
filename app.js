@@ -340,9 +340,10 @@ const bookmarkSVG = '<svg class="bi bi-bookmark text-secondary" width="1em" heig
 const bookmarkedSVG = '<svg class="bi bi-bookmark-fill text-warning" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3 3a2 2 0 012-2h6a2 2 0 012 2v12l-5-3-5 3V3z" clip-rule="evenodd"/></svg>'
 const timerOffSVG = '<svg class="bi bi-arrow-repeat" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M2.854 7.146a.5.5 0 00-.708 0l-2 2a.5.5 0 10.708.708L2.5 8.207l1.646 1.647a.5.5 0 00.708-.708l-2-2zm13-1a.5.5 0 00-.708 0L13.5 7.793l-1.646-1.647a.5.5 0 00-.708.708l2 2a.5.5 0 00.708 0l2-2a.5.5 0 000-.708z" clip-rule="evenodd"/><path fill-rule="evenodd" d="M8 3a4.995 4.995 0 00-4.192 2.273.5.5 0 01-.837-.546A6 6 0 0114 8a.5.5 0 01-1.001 0 5 5 0 00-5-5zM2.5 7.5A.5.5 0 013 8a5 5 0 009.192 2.727.5.5 0 11.837.546A6 6 0 012 8a.5.5 0 01.501-.5z" clip-rule="evenodd"/></svg>'
 const timerOnSVG = '<svg class="bi bi-arrow-repeat text-primary" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M2.854 7.146a.5.5 0 00-.708 0l-2 2a.5.5 0 10.708.708L2.5 8.207l1.646 1.647a.5.5 0 00.708-.708l-2-2zm13-1a.5.5 0 00-.708 0L13.5 7.793l-1.646-1.647a.5.5 0 00-.708.708l2 2a.5.5 0 00.708 0l2-2a.5.5 0 000-.708z" clip-rule="evenodd"/><path fill-rule="evenodd" d="M8 3a4.995 4.995 0 00-4.192 2.273.5.5 0 01-.837-.546A6 6 0 0114 8a.5.5 0 01-1.001 0 5 5 0 00-5-5zM2.5 7.5A.5.5 0 013 8a5 5 0 009.192 2.727.5.5 0 11.837.546A6 6 0 012 8a.5.5 0 01.501-.5z" clip-rule="evenodd"/></svg>'
+const radioControlSVG = '<svg class="bi bi-broadcast-pin text-secondary" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3.05 3.05a7 7 0 0 0 0 9.9.5.5 0 0 1-.707.707 8 8 0 0 1 0-11.314.5.5 0 0 1 .707.707zm2.122 2.122a4 4 0 0 0 0 5.656.5.5 0 0 1-.708.708 5 5 0 0 1 0-7.072.5.5 0 0 1 .708.708zm5.656-.708a.5.5 0 0 1 .708 0 5 5 0 0 1 0 7.072.5.5 0 1 1-.708-.708 4 4 0 0 0 0-5.656.5.5 0 0 1 0-.708zm2.122-2.12a.5.5 0 0 1 .707 0 8 8 0 0 1 0 11.313.5.5 0 0 1-.707-.707 7 7 0 0 0 0-9.9.5.5 0 0 1 0-.707zM6 8a2 2 0 1 1 2.5 1.937V15.5a.5.5 0 0 1-1 0V9.937A2 2 0 0 1 6 8z"/></svg>'
 
-let generateResultTimeStatus = (statusOrTime) => {
-  //  gick i mål på tiden <span class="font-weight-bold">' + safe(data.time) + '</span>
+// Generat texts for last passing results
+let generateResultTimeStatus = (statusOrTime, controlName) => {
   if(statusOrTime == "ej start") {
     return didNotStartSVG.replace("white-50","secondary") + '<span class="pl-1">Ej start</span>'
   } else if(statusOrTime == "utgått") {
@@ -350,7 +351,10 @@ let generateResultTimeStatus = (statusOrTime) => {
   } else if(statusOrTime == "felst.") {
     return missingPunchSVG.replace("white-50","secondary") + '<span class="pl-1">Felstämplat</span>'
   } else {
-    return 'gick i mål på tiden <span class="font-weight-bold">' + safe(statusOrTime) + '</span> ' + finishedSVG.replace("white-50","secondary")
+    if(controlName !== "") {
+      return 'vid ' + safe(controlName) + ' <span class="font-weight-bold">' + safe(statusOrTime) + '</span> ' + radioControlSVG;
+    }
+    return 'i mål på <span class="font-weight-bold">' + safe(statusOrTime) + '</span> ' + finishedSVG.replace("white-50","secondary");
   }
 }
 
@@ -435,7 +439,13 @@ let getLastPassings = (competitionId) => {
         saveResult(hashKey, json)
       }
 
-      let passings = json.passings;
+      //console.log("json.passings: ");
+      //console.dir(json.passings);
+
+      let passings = json.passings.sort(function(a,b) {
+        return (a.time < b.time)
+      });
+  
       // array.sort(function(a,b){return a[1] - b[1]});
       //passings = passings.sort(function(a,b){return a.time - b.time});
       saveHash("pass"+cid, json.hash);
@@ -472,13 +482,15 @@ let getLastPassings = (competitionId) => {
           html += '<li class="list-group-item bg-light p-2 d-flex">'
             html += '<small class="mr-2">' + safe(data.passtime) + '</small>'
             html += '<small class="mr-2 font-weight-bold">' + safe(data.runnerName) + '</small>'
-            if(data.controlName === "") {
+
+            html += '<small class="mr-auto">' + safe(generateResultTimeStatus(data.time, data.controlName)) + '</small>'
+            /*if(data.controlName === "") {
               //html += '<small class="mr-auto"> gick i mål på tiden <span class="font-weight-bold">' + safe(data.time) + '</span></small>'
-              html += '<small class="mr-auto">' + safe(generateResultTimeStatus(data.time)) + '</small>'
+              html += '<small class="mr-auto">' + safe(generateResultTimeStatus(data.time, data.controlName)) + '</small>'
               //html += '<small class="mr-auto"> gick i mål med tiden ' + safe(generateResultTimeStatus(data.time)) + '</small>'
             } else {
-              html += '<small class="mr-auto">passerade ' + safe(data.controlName) + ' med tiden ' + safe(data.time) + '</small>'              
-            }
+              html += '<small class="mr-auto">vid ' + safe(data.controlName) + radioControlSVG + ' <span class="font-weight-bold">' + safe(data.time) + '</span></small>'
+            }*/
             html += '<button type="button" class="btn btn-dark btn-sm pl-1 pr-1 pt-0 pb-0 text-warning ml-auto" onclick="getClassResult(' + cid + ',\'' + safe(data.class) + '\');">' + safe(data.class) + '</button>'
             //html += '<small class="mr-2">(<a href="#" onclick="getClassResult(' + competitionId + ',\'' + safe(data.class) + '\');return false">' + safe(data.class) + '</a>)</small>'
             //html += '<small class="mr-2">(' + data.controlName + ', ' + data.control + ')</small>'
@@ -544,19 +556,17 @@ let getClasses = (competitionId) => {
 let activateClassButtons = (className) => {
   $("#classes button").each((idx,btn) => {
     if(btn.innerHTML === className) {
-      $(btn).addClass("active")
-      //$(btn).addClass("btn-warning")
-      $(btn).addClass("btn-primary")
-      $(btn).removeClass("btn-dark")
-      $(btn).addClass("text-white")
-      $(btn).removeClass("text-warning")
+      $(btn).addClass("active");
+      $(btn).addClass("btn-primary");
+      $(btn).removeClass("btn-dark");
+      $(btn).addClass("text-white");
+      $(btn).removeClass("text-warning");
     } else {
-      $(btn).removeClass("active")
-      //$(btn).removeClass("btn-warning")
-      $(btn).removeClass("btn-primary")
-      $(btn).addClass("btn-dark")
-      $(btn).removeClass("text-white")
-      $(btn).addClass("text-warning")
+      $(btn).removeClass("active");
+      $(btn).removeClass("btn-primary");
+      $(btn).addClass("btn-dark");
+      $(btn).removeClass("text-white");
+      $(btn).addClass("text-warning");
     }
   });
 }
@@ -685,7 +695,7 @@ let getClassResult = (competitionId, className) => {
 
   // Reset split columns to hidden (max 3 supported)
   [1,2,3].forEach((el) => {
-    $( "#r"+el ).addClass( "d-none" )
+    $("#r"+el).addClass("d-none");
   });
 
   // Fetch new data
@@ -711,7 +721,7 @@ let getClassResult = (competitionId, className) => {
       //debug(classResult)
 
       let html = ""
-      let dirtySettings = loadSettings()
+      let dirtySettings = loadSettings();
 
       // Get radio/split controls
       //debug("splitControls")
@@ -719,8 +729,7 @@ let getClassResult = (competitionId, className) => {
       let nrSplitControls = splitControls.length;
       splitControls.forEach((ctrl, idx) => {
         // Show split column headers
-        $( "#r"+(idx+1) ).removeClass( "d-none" )
-        //document.getElementById("r"+idx).removeClass("d-none")
+        $( "#r"+(idx+1) ).removeClass( "d-none" );
       });
 
       // Render class results
@@ -742,47 +751,45 @@ let getClassResult = (competitionId, className) => {
         // {"place":"3","name":"Leif Orienterare","club":"Sjövalla FK","result":"38:11","status":0,"timeplus":"+05:41","progress":100,"start":3716900}
         html += '<tr>'
           if(data.status === 9 || data.status === 10) {
-            html += '<td class="text-center" scope="row">' + notStartedSVG + '</td>'
+            html += '<td class="text-center" scope="row">' + notStartedSVG + '</td>';
           } else if(data.status === 1) {
-            html += '<td class="text-center" scope="row">' + didNotStartSVG + '</td>'
+            html += '<td class="text-center" scope="row">' + didNotStartSVG + '</td>';
           } else if(data.status === 2) {
-            html += '<td class="text-center" scope="row">' + didNotFinishSVG + '</td>'
+            html += '<td class="text-center" scope="row">' + didNotFinishSVG + '</td>';
           } else if(data.status === 3) {
-            html += '<td class="text-center" scope="row">' + missingPunchSVG + '</td>'
+            html += '<td class="text-center" scope="row">' + missingPunchSVG + '</td>';
           } else {
-            html += '<td class="text-center" scope="row">' + safe(data.place) + '</td>'
+            html += '<td class="text-center" scope="row">' + safe(data.place) + '</td>';
           }
           if(isBookmarked(data.name, dirtySettings)) {
             //html += '<td class="text-center" scope="row">' + safe(data.place) + '</td>'
             html += '<td class="text-nowrap"><span class="font-weight-bold d-inline-block text-truncate" style="max-width:85%">' + safe(data.name) + '</span>'
-              + '<a href="#" title="Avmarkera" class="align-top d-inline-block ml-2 mt-0 link" onclick="toggleBookmark(\'' + safe(data.name) + '\', this);return false;">' + safe(generateFavoriteSVG(true)) + '</a>'
+              + '<a href="#" title="Avmarkera" class="align-top d-inline-block ml-2 mt-0 link" onclick="toggleBookmark(\'' + safe(data.name) + '\', this);return false;">' + safe(generateFavoriteSVG(true)) + '</a>';
           } else {
             html += '<td class="text-nowrap"><span class="font-weight-bold d-inline-block text-truncate" style="max-width:85%;">' + safe(data.name) + '</span>'
-              + '<a href="#" title="Bokmärk" class="align-top d-inline-block ml-2 mt-0 link" onclick="toggleBookmark(\'' + safe(data.name) + '\', this);return false;">' + safe(generateFavoriteSVG(false)) + '</a>'
+              + '<a href="#" title="Bokmärk" class="align-top d-inline-block ml-2 mt-0 link" onclick="toggleBookmark(\'' + safe(data.name) + '\', this);return false;">' + safe(generateFavoriteSVG(false)) + '</a>';
           }
           html += '<br><a href="#" title="Visa klubbresultat" class="small text-warning" onclick="getClubResult(\'' + competitionId + '\',\'' + safe(data.club) + '\');return false;">' + safe(data.club) + '</a></td>'
           html += '<td class="small text-center">' + moment(data.start * 10).subtract(1,'hour').format("HH:mm") + '</td>' // Summertime. What happens in wintertime??
           if((data.status === 9 || data.status === 10) && data.place == "" && data.start != "") {
             // Runner is out - calculate predicted time
-            html += '<td class="small text-center" colspan="' + (1+splitControls.length) + '">' + getStatusText(data.status) + '</td>'
+            html += '<td class="small text-center" colspan="' + (1+splitControls.length) + '">' + getStatusText(data.status) + '</td>';
           }
           else if(data.status !== 0) {
-            html += '<td class="small text-center" colspan="' + (1+splitControls.length) + '">' + getStatusText(data.status) + '</td>'
+            html += '<td class="small text-center" colspan="' + (1+splitControls.length) + '">' + getStatusText(data.status) + '</td>';
           } else {
             // Display result
             if(data.splits) {
               // Display split results
               splitControls.forEach((split, idx) => {
-                //console.dir(split)
                 var t = formatTime(data.splits[ split.code ], data.splits[ split.code + "_place"], false, true, true);
                 html += '<td class="small text-center">' + t + '&nbsp;(' + safe(data.splits[ split.code + "_place"]) + ')'
-                + '<br><span class="text-white-50">+' + formatTime(safe(data.splits[ split.code + "_timeplus"]),0,false,true,true) + '</span></td>';
+                  + '<br><span class="text-white-50">+' + formatTime(safe(data.splits[ split.code + "_timeplus"]),0,false,true,true) + '</span></td>';
               });
-              //html += '<td class="small text-center">' + safe(data.splits["1036_status"]) + '</td>'
             }
 
             html += '<td class="small text-center">' + safe(data.result)  
-              + '<br><span class="text-white-50">' + safe(data.timeplus).replace("+00:00","") + '</span></td>'
+              + '<br><span class="text-white-50">' + safe(data.timeplus).replace("+00:00","") + '</span></td>';
             /*if(data.DT_RowClass === "new_result") {
               html += '<td class="small text-center">' + safe(data.timeplus).replace("+00:00","") + '<br><span class="badge badge-light">Ny</span></td>' 
             } else {
