@@ -4,7 +4,7 @@
 moment().format()
 moment.locale('sv');
 
-const version = "1.5.0";
+const version = "1.5.1";
 
 const dp = DOMPurify;
 var dp_config = {
@@ -691,7 +691,7 @@ let getClassResult = (competitionId, className) => {
   activateClassButtons(className);
 
   // Temp fix
-  getLastPassings(competitionId);
+  //getLastPassings(competitionId);
 
   // Reset split columns to hidden (max 3 supported)
   [1,2,3].forEach((el) => {
@@ -773,10 +773,22 @@ let getClassResult = (competitionId, className) => {
           html += '<td class="small text-center">' + moment(data.start * 10).subtract(1,'hour').format("HH:mm") + '</td>' // Summertime. What happens in wintertime??
           if((data.status === 9 || data.status === 10) && data.place == "" && data.start != "") {
             // Runner is out - calculate predicted time
-            html += '<td class="small text-center" colspan="' + (1+splitControls.length) + '">' + getStatusText(data.status) + '</td>';
+            html += '<td class="small text-center" data-predict="true" data-start="' + safe(data.start) + '" colspan="' + (1+splitControls.length) + '">' + getStatusText(data.status) + '</td>';
           }
           else if(data.status !== 0) {
-            html += '<td class="small text-center" colspan="' + (1+splitControls.length) + '">' + getStatusText(data.status) + '</td>';
+            if(data.splits) {
+              // Display split results
+              splitControls.forEach((split, idx) => {
+                if(data.splits[ split.code + "_status"] == "1") {
+                  html += '<td class="small text-center"></td>';
+                } else {
+                  var t = formatTime(data.splits[ split.code ], data.splits[ split.code + "_place"], false, true, true);
+                  html += '<td class="small text-center">' + t + '&nbsp;(' + safe(data.splits[ split.code + "_place"]) + ')'
+                  + '<br><span class="text-white-50">+' + formatTime(safe(data.splits[ split.code + "_timeplus"]),0,false,true,true) + '</span></td>';
+                }
+              });
+            }
+            html += '<td class="small text-center">' + getStatusText(data.status) + '</td>';
           } else {
             // Display result
             if(data.splits) {
