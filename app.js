@@ -4,7 +4,7 @@
 moment().format()
 moment.locale('sv');
 
-const version = "1.5.1";
+const version = "1.5.2";
 
 const dp = DOMPurify;
 var dp_config = {
@@ -652,7 +652,7 @@ let formatTime = function (time, status, showTenthOs, showHours, padZeros) {
           if (hours > 0) {
               if (padZeros)
                   hours = hours.toString().padStart(2, "0");
-              return hours + ":" + minutes.padStart(2, "0") + ":" + seconds.toString().padStart(2, "0") + (showTenthOs ? "." + tenth : "");
+              return hours + ":" + minutes.toString().padStart(2, "0") + ":" + seconds.toString().padStart(2, "0") + (showTenthOs ? "." + tenth : "");
           }
           else {
               if (padZeros)
