@@ -4,7 +4,7 @@
 moment().format()
 moment.locale('sv');
 
-const version = "1.5.1";
+const version = "2.0";
 
 const dp = DOMPurify;
 var dp_config = {
