@@ -602,7 +602,7 @@ let getStatusText = (code) => {
       return "Över maxtid"
       break;
     case 9:
-      return "Ej startat ännu"
+      return "-"
       break;
     case 10:
       return "Ej startat ännu"
