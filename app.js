@@ -750,17 +750,19 @@ let getClassResult = (competitionId, className) => {
 
         // {"place":"3","name":"Leif Orienterare","club":"Sjövalla FK","result":"38:11","status":0,"timeplus":"+05:41","progress":100,"start":3716900}
         html += '<tr>'
-          if(data.status === 9 || data.status === 10) {
-            html += '<td class="text-center" scope="row">' + notStartedSVG + '</td>';
-          } else if(data.status === 1) {
+        if(data.status === 9) {
+          html += '<td class="text-center" scope="row">' + notStartedSVG + ' <!-- (9) --></td>';
+        } else if(data.status === 10) {
+            html += '<td class="text-center" scope="row">' + notStartedSVG + ' <!-- (10) --></td>';
+        } else if(data.status === 1) {
             html += '<td class="text-center" scope="row">' + didNotStartSVG + '</td>';
-          } else if(data.status === 2) {
+        } else if(data.status === 2) {
             html += '<td class="text-center" scope="row">' + didNotFinishSVG + '</td>';
-          } else if(data.status === 3) {
+        } else if(data.status === 3) {
             html += '<td class="text-center" scope="row">' + missingPunchSVG + '</td>';
-          } else {
+        } else {
             html += '<td class="text-center" scope="row">' + safe(data.place) + '</td>';
-          }
+        }
           if(isBookmarked(data.name, dirtySettings)) {
             //html += '<td class="text-center" scope="row">' + safe(data.place) + '</td>'
             html += '<td class="text-nowrap"><span class="font-weight-bold d-inline-block text-truncate" style="max-width:85%">' + safe(data.name) + '</span>'
