@@ -750,9 +750,11 @@ let getClassResult = (competitionId, className) => {
 
         // {"place":"3","name":"Leif Orienterare","club":"Sjövalla FK","result":"38:11","status":0,"timeplus":"+05:41","progress":100,"start":3716900}
         html += '<tr>'
-          if(data.status === 9 || data.status === 10) {
-            html += '<td class="text-center" scope="row">' + notStartedSVG + '</td>';
-          } else if(data.status === 1) {
+        if(data.status === 9) {
+          html += '<td class="text-center" scope="row">' + notStartedSVG + '<!-- 9 --></td>';
+        } else if(data.status === 10) {
+          html += '<td class="text-center" scope="row">' + notStartedSVG + '<!-- 10 --></td>';
+        } else if(data.status === 1) {
             html += '<td class="text-center" scope="row">' + didNotStartSVG + '</td>';
           } else if(data.status === 2) {
             html += '<td class="text-center" scope="row">' + didNotFinishSVG + '</td>';
@@ -773,7 +775,17 @@ let getClassResult = (competitionId, className) => {
           html += '<td class="small text-center">' + moment(data.start * 10).subtract(1,'hour').format("HH:mm") + '</td>' // Summertime. What happens in wintertime??
           if((data.status === 9 || data.status === 10) && data.place == "" && data.start != "") {
             // Runner is out - calculate predicted time
-            html += '<td class="small text-center" data-predict="true" data-start="' + safe(data.start) + '" colspan="' + (1+splitControls.length) + '">' + getStatusText(data.status) + '</td>';
+            
+            // var starttime = moment(data.start * 10).subtract(1,'hour');
+            // var outtime = starttime.fromNow();
+            // console.log(data.name + " start: ", data.start);
+            // html += '<td class="small text-center" data-predict="true" data-start="' 
+            //   + safe(data.start) 
+            //   + '" colspan="' + (1+splitControls.length) + '">' 
+            //   + starttime +', '+ outtime +', '+ + getStatusText(data.status) 
+            //   + '</td>';
+            
+              html += '<td class="small text-center" data-predict="true" data-start="' + safe(data.start) + '" colspan="' + (1+splitControls.length) + '">' + getStatusText(data.status) + '</td>';
           }
           else if(data.status !== 0) {
             if(data.splits) {
@@ -914,8 +926,10 @@ let getClubResult = (competitionId, clubName) => {
         html += '<tr>'
           //html += '<td class="text-center" scope="row">' + safe(data.place) + '<br></td>'
 
-          if(data.status === 9 || data.status === 10) {
-            html += '<td class="text-center" scope="row">' + notStartedSVG + '</td>'
+          if(data.status === 9) {
+            html += '<td class="text-center" scope="row">' + notStartedSVG + '<!-- 9 --></td>'
+          } else if(data.status === 10) {
+            html += '<td class="text-center" scope="row">' + notStartedSVG + '<!-- 10 --></td>'
           } else if(data.status === 1) {
             html += '<td class="text-center" scope="row">' + didNotStartSVG + '</td>'
           } else if(data.status === 2) {

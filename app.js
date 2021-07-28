@@ -710,8 +710,10 @@ let getClassResult = (competitionId, className) => {
       console.log("Can't last passings")
     } else if (xhr.status === 200) {
       if(json.status == "NOT MODIFIED") {
+        console.log("Load class result")
         json = loadResult(hashKey)
       } else {
+        console.log("Save class result")
         saveResult(hashKey, json)
       }
       let classResult = json.results;
@@ -751,9 +753,9 @@ let getClassResult = (competitionId, className) => {
         // {"place":"3","name":"Leif Orienterare","club":"Sjövalla FK","result":"38:11","status":0,"timeplus":"+05:41","progress":100,"start":3716900}
         html += '<tr>'
         if(data.status === 9) {
-          html += '<td class="text-center" scope="row">' + notStartedSVG + ' <!-- (9) --></td>';
+          html += '<td class="text-center" scope="row">' + notStartedSVG + '</td>';
         } else if(data.status === 10) {
-            html += '<td class="text-center" scope="row">' + notStartedSVG + ' <!-- (10) --></td>';
+            html += '<td class="text-center" scope="row">' + notStartedSVG + '</td>';
         } else if(data.status === 1) {
             html += '<td class="text-center" scope="row">' + didNotStartSVG + '</td>';
         } else if(data.status === 2) {
@@ -816,6 +818,7 @@ let getClassResult = (competitionId, className) => {
       document.getElementById("resultRows").innerHTML = html
     } else {
       //debug("what?" + xhr.status + ", " + json.status)
+      console.log("Edge case")
       debug(json)
     }
   });
